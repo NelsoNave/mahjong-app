@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "formulahendry.auto-close-tag",
+        "hediet.vscode-drawio",
+        "dsznajder.es7-react-js-snippets",
+    ]
+}
