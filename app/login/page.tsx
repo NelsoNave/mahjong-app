@@ -1,11 +1,9 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
-
-export default function SignIn() {
+import { useSession, signIn } from "next-auth/react";
+import { redirect } from "next/navigation";
+export default function Login() {
   const { data: session, status } = useSession();
-
-  console.log("session", session);
 
   if (status === "loading") {
     return <h1>Loading...</h1>;
@@ -27,19 +25,6 @@ export default function SignIn() {
     );
   }
 
-  const user = session.user;
-  return (
-    <>
-      <h1>Welcome {user?.name}</h1>
-      <h2>{user?.image}</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          signOut();
-        }}
-      >
-        <button type="submit">Sign out</button>
-      </form>
-    </>
-  );
+  // Back to the home page
+  redirect("/");
 }
