@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/app/lib/auth";
 import { redirect } from "next/navigation";
-import SignOut from "@/components/SignOut";
+import SignOut from "@/app/components/SignOut";
 
 export default async function Home() {
   const session = await auth();
