@@ -1,9 +1,13 @@
 import React from "react";
+import Navigation from "../components/Navigation";
 
-type Props = {};
-
-const page = (props: Props) => {
-  return <div>record page</div>;
+const page = () => {
+  return (
+    <>
+      <div>Record page</div>
+      <Navigation />
+    </>
+  );
 };
 
 export default page;
