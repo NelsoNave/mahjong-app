@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -41,6 +42,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.image = token.image as string;
 
       return session;
+    },
+
+    async signIn({ user }) {
+      if (!user.email) {
+        return false;
+      }
+      // save user in database
+      await prisma.user.upsert({
+        where: { email: user.email },
+        create: {
+          email: user.email,
+          user_name: user.name || "",
+          image: user.image || "",
+          language: "ja",
+        },
+        update: {
+          user_name: user.name || "",
+          image: user.image || "",
+        },
+      });
+      return true;
     },
   },
 });
