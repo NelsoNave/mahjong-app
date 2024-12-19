@@ -3,16 +3,12 @@ import React from "react";
 import { signOut } from "next-auth/react";
 
 const SignOut = () => {
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        signOut({ callbackUrl: "/" });
-      }}
-    >
-      <button type="submit">Sign out</button>
-    </form>
-  );
+  const handleClick = () => {
+    // sign out and redirect to the home page
+    signOut({ callbackUrl: "/" });
+  };
+
+  return <button onClick={handleClick}>Sign out</button>;
 };
 
 export default SignOut;
