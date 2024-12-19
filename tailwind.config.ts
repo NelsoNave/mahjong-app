@@ -11,6 +11,7 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        appleBlossom: "#A54242",
       },
       borderWidth: {
         "0.5": "0.5px",

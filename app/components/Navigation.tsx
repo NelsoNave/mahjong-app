@@ -1,5 +1,7 @@
+"use client";
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavItemProps {
   icon: string;
@@ -7,23 +9,28 @@ interface NavItemProps {
   navigateTo: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, navigateTo }) => (
-  <Link
-    href={navigateTo}
-    className="flex w-16 flex-col items-center justify-center gap-1"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      width="20"
-      height="20"
+const NavItem: React.FC<NavItemProps> = ({ icon, label, navigateTo }) => {
+  const currentPathName = usePathname();
+  const isSelected = currentPathName === navigateTo;
+
+  return (
+    <Link
+      href={navigateTo}
+      className={`flex w-16 flex-col items-center justify-center gap-1 ${isSelected ? "text-appleBlossom" : "text-gray-600"} hover:text-appleBlossom`}
     >
-      <path d={icon} />
-    </svg>
-    <p className="text-xs">{label}</p>
-  </Link>
-);
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width="20"
+        height="20"
+      >
+        <path d={icon} />
+      </svg>
+      <p className="text-xs">{label}</p>
+    </Link>
+  );
+};
 
 const Navigation: React.FC = () => {
   const navItems: { icon: string; label: string; navigateTo: string }[] = [
