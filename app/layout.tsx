@@ -14,11 +14,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-background">
-        <SessionProvider>
-          <main>{children}</main>
-        </SessionProvider>
-      </body>
+      <SessionProvider>
+        <body className="flex justify-center antialiased">
+          <div className="flex h-screen w-full max-w-md flex-col justify-between bg-background">
+            {children}
+          </div>
+        </body>
+      </SessionProvider>
     </html>
   );
 }
