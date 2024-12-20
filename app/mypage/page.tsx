@@ -8,6 +8,26 @@ import SignOut from "../components/SignOut";
 import Navigation from "../components/Navigation";
 
 const Page: React.FC = () => {
+  // Fetch user info
+  async function getUserInfo(): Promise<UserInfo> {
+    try {
+      const res = await fetch("https://testURL");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch users");
+      }
+
+      return res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  // Todo: fetch actual data via API once API is implemented.
+  // const userInfo = getUserInfo();
+
+  // dummy data
   const userInfo: UserInfo = {
     id: "00000001",
     username: "Ben Ono",
@@ -113,33 +133,39 @@ const Page: React.FC = () => {
             </div>
           </div>
           <UserModal isOpen={isUsernameModalOpen} onClose={handleCloseModal}>
-            <form>
-              <div>
-                <label>新しいユーザーネーム:</label>
+            <form className="flex flex-col">
+              <div className="flex flex-col gap-4">
+                <label>ユーザー名を入力してください</label>
                 <input
                   type="text"
-                  className="mt-2 w-full border p-2"
+                  className="mt-2 w-full rounded-md border p-2"
                   defaultValue={userInfo.username}
                 />
               </div>
-              <button type="submit" className="mt-4 bg-blue-500 p-2 text-white">
+              <button
+                type="submit"
+                className="bg-denim ml-auto mt-4 w-1/4 rounded-lg p-2 text-white hover:bg-opacity-90"
+              >
                 保存
               </button>
             </form>
           </UserModal>
           <UserModal isOpen={isLanguageModalOpen} onClose={handleCloseModal}>
-            <form>
-              <div>
+            <form className="flex flex-col">
+              <div className="flex flex-col gap-4">
                 <label>言語を選択してください</label>
                 <select
-                  className="mt-2 w-full border p-2"
+                  className="mt-2 w-full rounded-md border p-2"
                   defaultValue={userInfo.language}
                 >
                   <option value="jp">日本語</option>
                   <option value="en">英語</option>
                 </select>
               </div>
-              <button type="submit" className="mt-4 bg-blue-500 p-2 text-white">
+              <button
+                type="submit"
+                className="bg-denim ml-auto mt-4 w-1/4 rounded-lg p-2 text-white hover:bg-opacity-90"
+              >
                 保存
               </button>
             </form>
@@ -148,18 +174,18 @@ const Page: React.FC = () => {
             isOpen={isDeleteAccountModalOpen}
             onClose={handleCloseModal}
           >
-            <form>
+            <form className="flex flex-col gap-4">
               <p>アカウントを削除しますか？</p>
               <div className="flex justify-end gap-2">
                 <button
                   type="submit"
-                  className="mt-4 bg-blue-500 p-2 text-white"
+                  className="bg-denim mt-4 w-1/4 rounded-lg px-1 py-2 text-sm text-white hover:bg-opacity-90"
                 >
                   キャンセル
                 </button>
                 <button
                   type="submit"
-                  className="mt-4 bg-blue-500 p-2 text-white"
+                  className="bg-appleBlossom mt-4 w-1/4 rounded-lg px-1 py-2 text-white hover:bg-opacity-90"
                   onClick={handleDeleteClick}
                 >
                   削除
