@@ -3,15 +3,109 @@ openapi: "3.0.3"
 info:
   title: "JongReki API"
   version: "1.0.0"
+  description: |
+    Version Strategy:
+    - Major version changes (/v1 -> /v2): Breaking changes
+    - Minor version changes: Backward compatible additions
+    - Current stable version: v1
 
 servers:
-  - url: "http://localhost:5555"
+  - url: "http://localhost:3000/api/v1"
     description: "development server"
+  - url: "https://[render.api.url]/v1"
+    description: "production server"
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, INTERNAL_ERROR]
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        requestId:
+          type: string
+          description: "デバッグ用のリクエスト識別子"
+
+  responses:
+    BadRequest:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "BAD_REQUEST"
+            message: "Friends Id must be a positive integer"
+            details:
+              field: "friends_id"
+              reason: "invalid_format"
+              value: "-1"
+            requestId: "req_123"
+    Unauthorized:
+      description: "Unauthorized"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "UNAUTHORIZED"
+            message: "Authentication is required"
+            details:
+              reason: "token_expired"
+              scope: "friends:read"
+            requestId: "req_456"
+    Forbidden:
+      description: "Forbidden"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "FORBIDDEN"
+            message: "You are not allowed to access this resource"
+            details:
+              reason: "insufficient_permissions"
+              scope: "friends:write"
+            requestId: "req_789"
+    NotFound:
+      description: "Not Found"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "NOT_FOUND"
+            message: "Resource not found"
+            details:
+              reason: "resource_not_found"
+              resource: "friends"
+            requestId: "req_101"
+    InternalError:
+      description: "Internal Server Error"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "INTERNAL_ERROR"
+            message: "An unexpected error occurred"
+            details:
+              reason: "internal_server_error"
+            requestId: "req_102"
+
 paths:
   "/friends":
     get:
       summary: "Get all friends"
       description: "Get data from the friends table including all status."
+      tags:
+        - friends
       responses:
         "200":
           description: "Get all friends successfully"
@@ -19,30 +113,21 @@ paths:
             application/json:
               schema:
                 type: array
-                properties:
-                  user_id: 
-                    type: integer
-                    description: "Foreign key referencing the 'users' table."
-                  friend_id:
-                    type: integer
-                    description: "Foreign key referencing the 'users' table."
-                  status:
-                    type: string
-                    enum: [pending, approved, rejected]
-                example: 
-                  - user_id: "00001"
-                    friend_id: "00002"
-                    status: "pending"
+                items:
+                  type: object
+                  properties:
+                    user_id: 
+                      type: integer
+                    friend_id:
+                      type: integer
+                    status:
+                      type: string
+                      enum: [pending, approved, rejected]
         "400":
-          description: "BadRequest"
-          content:
-            application/json:
-              schema:
-                type: "object"
-                properties:
-                  status:
-                    type: "string"
-                    example: "BAD_REQUEST"
-                  message:
-                    type: "string"
-                    example: "BAD_REQUEST"
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
