@@ -3,6 +3,7 @@ export type UserInfoCardProps = {
   value: string;
   actionText: string;
   d: string;
+  onClick: () => void;
 };
 
 export type UserInfo = {
