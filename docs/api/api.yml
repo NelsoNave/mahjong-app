@@ -1,0 +1,48 @@
+openapi: "3.0.3"
+
+info:
+  title: "JongReki API"
+  version: "1.0.0"
+
+servers:
+  - url: "http://localhost:5555"
+    description: "development server"
+paths:
+  "/friends":
+    get:
+      summary: "Get all friends"
+      description: "Get data from the friends table including all status."
+      responses:
+        "200":
+          description: "Get all friends successfully"
+          content:
+            application/json:
+              schema:
+                type: array
+                properties:
+                  user_id: 
+                    type: integer
+                    description: "Foreign key referencing the 'users' table."
+                  friend_id:
+                    type: integer
+                    description: "Foreign key referencing the 'users' table."
+                  status:
+                    type: string
+                    enum: [pending, approved, rejected]
+                example: 
+                  - user_id: "00001"
+                    friend_id: "00002"
+                    status: "pending"
+        "400":
+          description: "BadRequest"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  status:
+                    type: "string"
+                    example: "BAD_REQUEST"
+                  message:
+                    type: "string"
+                    example: "BAD_REQUEST"
