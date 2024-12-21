@@ -10,13 +10,13 @@ const UserInfoCard = ({
   d,
   onClick,
 }: UserInfoCardProps) => (
-  <div className="border-b-0.5 flex h-24 items-center justify-between border-slate-400">
+  <div className="flex items-center justify-between border-b border-slate-400 py-4">
     <div className="flex flex-col gap-1 font-medium">
-      <p className="text-sm">{label}</p>
+      <p className="text-sm font-medium text-gray-700">{label}</p>
       <p>{value}</p>
     </div>
     <div
-      className="text-amazon flex items-center gap-1 text-sm"
+      className="flex cursor-pointer items-center gap-1 text-sm text-amazon"
       onClick={onClick}
     >
       <p>{actionText}</p>
