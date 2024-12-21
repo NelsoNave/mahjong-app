@@ -7,65 +7,63 @@ import { UserInfo } from "@/app/types/user";
 import SignOut from "../components/SignOut";
 import Navigation from "../components/Navigation";
 
+import {
+  getUserInfo,
+  updateUserInfo,
+  deleteUser,
+} from "@/app/actions/userActions";
+import { signOut } from "next-auth/react";
+
 const Page: React.FC = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
-  // Fetch user info
-  async function getUserInfo(): Promise<UserInfo> {
+  const fetchUserInfo = async () => {
     try {
-      // Todo: replace with actual URL
-      const res = await fetch("https://testURL");
-      if (!res.ok) {
-        throw new Error("Failed to fetch users");
-      }
-      return res.json();
+      const data = await getUserInfo();
+      setUserInfo(data);
     } catch (err) {
       console.error(err);
-      throw err;
     }
-  }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // const data = await getUserInfo();
-
-        // dummy data
-        const data = {
-          id: "00000001",
-          username: "Ben Ono",
-          language: "日本語",
-          email: "benono123@gmail.com",
-          profileImage: "/icon-sample-man.jpg",
-        };
-
-        setUserInfo(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
+    fetchUserInfo();
   }, []);
 
-  // Update user info
-  const updateUserInfo = async (updatedInfo: UserInfo) => {
-    try {
-      // Todo: replace with actual URL
-      const res = await fetch("https://testURL/update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedInfo),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to update user info");
+  // change username
+  const handleSaveUsername = async (newUsername: string) => {
+    if (userInfo) {
+      const updatedInfo = { ...userInfo, username: newUsername };
+      try {
+        const updatedUser = await updateUserInfo(updatedInfo);
+        setUserInfo(updatedUser);
+        handleCloseModal();
+      } catch (err) {
+        console.error(err);
       }
+    }
+  };
 
-      const updatedUser = await res.json();
-      setUserInfo(updatedUser);
+  // change language
+  const handleSaveLanguage = async (newLanguage: string) => {
+    if (userInfo) {
+      const updatedInfo = { ...userInfo, language: newLanguage };
+      try {
+        const updatedUser = await updateUserInfo(updatedInfo);
+        setUserInfo(updatedUser);
+        handleCloseModal();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  // delete account
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteUser();
+      alert("アカウントが削除されました");
+      signOut({ callbackUrl: "/" });
     } catch (err) {
       console.error(err);
     }
@@ -77,52 +75,10 @@ const Page: React.FC = () => {
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
     useState(false);
 
-  // Modal open handlers
-  const handleEditUsernameClick = () => setIsUsernameModalOpen(true);
-  const handleEditLanguageClick = () => setIsLanguageModalOpen(true);
-  const handleDeleteAccountClick = () => setIsDeleteAccountModalOpen(true);
-
-  // Modal close handlers
   const handleCloseModal = () => {
     setIsUsernameModalOpen(false);
     setIsLanguageModalOpen(false);
     setIsDeleteAccountModalOpen(false);
-  };
-
-  const handleDeleteClick = async () => {
-    // Todo: Implement account delete logic
-    try {
-      const res = await fetch("https://testURL/delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to delete account");
-      }
-
-      alert("アカウントが削除されました");
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSaveUsername = async (newUsername: string) => {
-    if (userInfo) {
-      const updatedInfo = { ...userInfo, username: newUsername };
-      await updateUserInfo(updatedInfo);
-      handleCloseModal();
-    }
-  };
-
-  const handleSaveLanguage = async (newLanguage: string) => {
-    if (userInfo) {
-      const updatedInfo = { ...userInfo, language: newLanguage };
-      await updateUserInfo(updatedInfo);
-      handleCloseModal();
-    }
   };
 
   return (
@@ -159,6 +115,7 @@ const Page: React.FC = () => {
               />
             )}
           </div>
+          {/* Username Setting Section */}
           <div>
             {userInfo && (
               <UserInfoCard
@@ -166,10 +123,11 @@ const Page: React.FC = () => {
                 value={userInfo.username}
                 actionText="編集"
                 d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                onClick={handleEditUsernameClick}
+                onClick={() => setIsUsernameModalOpen(true)}
               />
             )}
           </div>
+          {/* Language Setting Section */}
           <div>
             {userInfo && (
               <UserInfoCard
@@ -177,17 +135,18 @@ const Page: React.FC = () => {
                 value={userInfo.language}
                 actionText="変更"
                 d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                onClick={handleEditLanguageClick}
+                onClick={() => setIsLanguageModalOpen(true)}
               />
             )}
           </div>
+          {/* Delete Account Section */}
           <div className="flex h-24 items-center justify-between">
             <div className="flex flex-col gap-1 font-medium">
               <p className="text-sm">アカウント変更</p>
             </div>
             <div
-              className="text-amazon flex items-center gap-1 text-sm"
-              onClick={handleDeleteAccountClick}
+              className="flex cursor-pointer items-center gap-1 text-sm text-appleBlossom"
+              onClick={() => setIsDeleteAccountModalOpen(true)}
             >
               <p>削除</p>
               <svg
@@ -268,14 +227,15 @@ const Page: React.FC = () => {
               <div className="flex justify-end gap-2">
                 <button
                   type="submit"
-                  className="bg-denim mt-4 w-1/4 rounded-lg px-1 py-2 text-sm text-white hover:bg-opacity-90"
+                  className="mt-4 w-1/4 rounded-lg bg-denim px-1 py-2 text-sm text-white hover:bg-opacity-90"
+                  onClick={handleCloseModal}
                 >
                   キャンセル
                 </button>
                 <button
                   type="submit"
-                  className="bg-appleBlossom mt-4 w-1/4 rounded-lg px-1 py-2 text-white hover:bg-opacity-90"
-                  onClick={handleDeleteClick}
+                  className="mt-4 w-1/4 rounded-lg bg-appleBlossom px-1 py-2 text-white hover:bg-opacity-90"
+                  onClick={handleDeleteAccount}
                 >
                   削除
                 </button>
