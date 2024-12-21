@@ -52,3 +52,9 @@ npx prisma migrate dev --name <name>
 # deploy migration file
 npx prisma migrate deploy
 ```
+
+## How to Preview Swagger Documentation in VSCode
+1. Install Swagger Viewer Extension
+2. Open Command Palette(Press `Command + Shift + P`)
+3. Run `Swagger Preview`
+4. View the Documentation
