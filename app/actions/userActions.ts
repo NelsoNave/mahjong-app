@@ -6,7 +6,7 @@ export async function getUserInfo() {
 
   // dummy data
   return {
-    id: "00000001",
+    id: "1",
     username: "Ben Ono",
     language: "日本語",
     email: "benono123@gmail.com",
