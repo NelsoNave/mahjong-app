@@ -8,12 +8,17 @@ interface SignOutProps {
 
 const SignOut: React.FC<SignOutProps> = ({ className = "" }) => {
   const handleClick = () => {
-    signOut({ callbackUrl: "/" });
+    try {
+      signOut({ callbackUrl: "/" });
+    } catch (err) {
+      console.error("Failed to sign out", err);
+      alert("サインアウトに失敗しました");
+    }
   };
 
   return (
     <button
-      className={`hover:border-amazon hover:text-amazon ml-auto mt-6 flex items-center gap-1 rounded-lg border border-zinc-500 px-3 py-2 hover:font-bold hover:outline-offset-8 ${className}`}
+      className={`ml-auto mt-6 flex items-center gap-1 rounded-lg border border-zinc-500 px-3 py-2 hover:border-amazon hover:font-bold hover:text-amazon hover:outline-offset-8 ${className}`}
       onClick={handleClick}
     >
       <p className="text-sm">サインアウト</p>

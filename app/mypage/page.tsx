@@ -43,6 +43,7 @@ const Page: React.FC = () => {
         setUserInfo(data);
       } catch (err) {
         console.error(err);
+        alert("ユーザー情報の取得に失敗しました");
       }
     };
 
@@ -50,11 +51,21 @@ const Page: React.FC = () => {
   }, []);
 
   if (!isHydrated) {
-    return null;
+    return <div>Loading...</div>;
   }
 
   // change username
   const handleSaveUsername = async (newUsername: string) => {
+    if (!newUsername.trim()) {
+      alert("ユーザーネームを入力してください");
+      return;
+    }
+
+    if (newUsername.length > 50) {
+      alert("ユーザーネームは50文字以内で入力してください");
+      return;
+    }
+
     if (userInfo) {
       const updatedInfo = { ...userInfo, username: newUsername };
       try {
@@ -63,6 +74,7 @@ const Page: React.FC = () => {
         handleCloseModal();
       } catch (err) {
         console.error(err);
+        alert("ユーザーネームの更新に失敗しました");
       }
     }
   };
@@ -77,6 +89,7 @@ const Page: React.FC = () => {
         handleCloseModal();
       } catch (err) {
         console.error(err);
+        alert("言語設定の変更に失敗しました");
       }
     }
   };
@@ -89,6 +102,7 @@ const Page: React.FC = () => {
       signOut({ callbackUrl: "/" });
     } catch (err) {
       console.error(err);
+      alert("アカウントの削除に失敗しました");
     }
   };
 
@@ -96,6 +110,13 @@ const Page: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validExtensions = ["image/jpeg", "image/png"];
+      if (!validExtensions.includes(file.type)) {
+        alert(
+          "不正なファイル形式です。画像ファイル(JPEG, PNG)のみをアップロードできます",
+        );
+        return;
+      }
       const thumbnailImage = URL.createObjectURL(file);
       if (userInfo) {
         const updatedInfo = { ...userInfo, thumbnailImage: thumbnailImage };
@@ -103,6 +124,7 @@ const Page: React.FC = () => {
           setUserInfo(updatedInfo);
         } catch (err) {
           console.error(err);
+          alert("サムネイル画像の更新に失敗しました");
         }
       }
     }
