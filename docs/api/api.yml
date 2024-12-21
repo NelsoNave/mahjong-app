@@ -158,6 +158,14 @@ paths:
                     type: string
                   image:
                     type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
     post:
       summary: "Send a friend request"
       description: "Insert a data to the friends table."
@@ -180,6 +188,14 @@ paths:
                 properties:
                   message:
                     type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
     put:
       summary: "Approve or reject friend request"
       description: "Update a friend status on friends table"
@@ -210,6 +226,14 @@ paths:
                 properties:
                   message:
                     type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
     delete:
       summary: "Delete a friend"
       description: "Delete a friend from the friends table(physical deletion)."
@@ -230,3 +254,12 @@ paths:
                 properties:
                   message:
                     type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
