@@ -12,4 +12,5 @@ export type UserInfo = {
   language: string;
   email: string;
   profileImage: string;
+  thumbnailImage: string;
 };

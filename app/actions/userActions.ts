@@ -11,6 +11,7 @@ export async function getUserInfo() {
     language: "日本語",
     email: "benono123@gmail.com",
     profileImage: "/icon-sample-man.jpg",
+    thumbnailImage: "",
   };
 }
 
@@ -24,6 +25,7 @@ export async function updateUserInfo(updatedInfo: UserInfo) {
     language: "日本語",
     email: "benono123@gmail.com",
     profileImage: "/icon-sample-man.jpg",
+    thumbnailImage: "/sample-thumbnailImage.jpg",
   };
 
   return updatedInfo;
