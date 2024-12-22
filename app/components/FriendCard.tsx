@@ -4,6 +4,7 @@ import { FriendData } from "@/app/types/friend";
 interface FriendCardProps extends FriendData {
   handleApprove: () => void;
   handleDenyRequest: () => void;
+  handleDeleteFriend: (id: number) => void;
 }
 
 const FriendCard = ({
@@ -12,6 +13,7 @@ const FriendCard = ({
   status,
   handleApprove,
   handleDenyRequest,
+  handleDeleteFriend,
 }: FriendCardProps) => {
   if (status === "pending") {
     return (
@@ -75,7 +77,7 @@ const FriendCard = ({
         </div>
         <div>
           <button
-            onClick={handleApprove}
+            onClick={() => handleDeleteFriend(id)}
             className="rounded bg-appleBlossom px-4 py-1 text-sm text-white hover:opacity-90"
           >
             削除
