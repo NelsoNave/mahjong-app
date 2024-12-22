@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { FriendData } from "@/app/types/friend";
 
 interface FriendCardProps extends FriendData {
@@ -11,6 +12,7 @@ const FriendCard = ({
   id,
   friendName,
   status,
+  profileImage,
   handleApprove,
   handleDenyRequest,
   handleDeleteFriend,
@@ -19,16 +21,13 @@ const FriendCard = ({
     return (
       <div className="mt-2 flex items-center justify-between gap-4 rounded-md bg-neutral-50 px-4 py-2 shadow-[0_0_2px_0_rgba(53,40,1,0.3)]">
         <div className="flex flex-row items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            width={20}
-            height={20}
-          >
-            <path d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-          </svg>
+          <Image
+            src={profileImage}
+            alt="profile"
+            width={40}
+            height={40}
+            className="h-[40px] w-[40px] rounded-full object-cover"
+          />
           <div className="flex flex-col items-start">
             <p>{friendName}</p>
             <p className="text-sm font-light">
@@ -58,16 +57,13 @@ const FriendCard = ({
     return (
       <div className="mt-2 flex items-center justify-between gap-4 rounded-md bg-neutral-50 p-2 px-4 py-2 shadow-[0_0_2px_0_rgba(53,40,1,0.3)]">
         <div className="flex flex-row items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            width={20}
-            height={20}
-          >
-            <path d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-          </svg>
+          <Image
+            src={profileImage}
+            alt="profile"
+            width={40}
+            height={40}
+            className="h-[40px] w-[40px] rounded-full object-cover"
+          />
           <div className="flex flex-col items-start">
             <p>{friendName}</p>
             <p className="text-sm font-light">
@@ -84,7 +80,6 @@ const FriendCard = ({
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              stroke-width="1.5"
               stroke="currentColor"
               width={20}
               height={20}
