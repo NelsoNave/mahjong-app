@@ -17,6 +17,19 @@ servers:
 
 components:
   schemas:
+    Friend:
+      type: object
+      properties:
+        user_id: 
+          type: integer
+        friend_id:
+          type: integer
+        user_name:
+          type: string
+          example: "りさ"
+        image:
+          type: string
+          example: "https://example.com/image-01.png"
     Error:
       type: object
       properties:
@@ -41,7 +54,7 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             status: "BAD_REQUEST"
-            message: "Friends Id must be a positive integer"
+            message: "フレンドIDは正の整数を入力してください"
             details:
               field: "friends_id"
               reason: "invalid_format"
@@ -55,7 +68,7 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             status: "UNAUTHORIZED"
-            message: "Authentication is required"
+            message: "認証が必要です"
             details:
               reason: "token_expired"
               scope: "friends:read"
@@ -68,7 +81,7 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             status: "FORBIDDEN"
-            message: "You are not allowed to access this resource"
+            message: "アクセス権限がありません"
             details:
               reason: "insufficient_permissions"
               scope: "friends:write"
@@ -81,7 +94,7 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             status: "NOT_FOUND"
-            message: "Resource not found"
+            message: "コンテンツが見つかりません"
             details:
               reason: "resource_not_found"
               resource: "friends"
@@ -94,7 +107,7 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             status: "INTERNAL_ERROR"
-            message: "An unexpected error occurred"
+            message: "予期しないエラーが発生しました"
             details:
               reason: "internal_server_error"
             requestId: "req_102"
@@ -116,13 +129,18 @@ paths:
                 items:
                   type: object
                   properties:
-                    user_id: 
-                      type: integer
-                    friend_id:
-                      type: integer
-                    status:
-                      type: string
-                      enum: [pending, approved, rejected]
+                    "pending":
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Friend"
+                    "accept":
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Friend"
+                    "reject":
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Friend"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -152,12 +170,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  friend_id:
                     type: integer
                   user_name:
                     type: string
+                    example: "りさ"
                   image:
                     type: string
+                    example: "https://example.com/image-01.png"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -176,7 +196,7 @@ paths:
           in: path
           required: true
           description: "friend_id"
-          schema: 
+          schema:
             type: integer
       responses:
         "201":
@@ -188,6 +208,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "友達申請を送りました"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -199,6 +220,8 @@ paths:
     patch:
       summary: "Approve or reject friend request"
       description: "Update friend status in the friends table"
+      tags:
+        - friends
       parameters:
         - name: Id
           in: path
@@ -226,6 +249,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "友達のステータスを更新しました"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -237,6 +261,8 @@ paths:
     delete:
       summary: "Delete a friend"
       description: "Delete a friend from the friends table(physical deletion)."
+      tags:
+        - friends
       parameters:
         - name: Id
           in: path
@@ -254,6 +280,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "友達を削除しました"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -282,12 +309,16 @@ paths:
                     type: string
                   email:
                     type: string
+                    example: "example@gmail.com"
                   language:
                     type: string
+                    example: "日本語"
                   image:
                     type: string
+                    example: "https://example.com/image-01.png"
                   background_image:
                     type: string
+                    example: "https://example.com/image-01.png"
                   subscription_plan_id:
                     type: integer
         "400":
@@ -312,12 +343,16 @@ paths:
               properties:
                 user_name:
                   type: string
+                  example: "りさ"
                 language:
                   type: string
+                  example: "English"
                 image: 
                   type: string
+                  example: "https://example.com/image-01.png"
                 background_image:
                   type: string
+                  example: "https://example.com/image-01.png"
                 subscription_plan_id:
                   type: integer
       responses:
@@ -330,6 +365,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "アカウントを更新しました"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -353,6 +389,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "アカウントを削除しました"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
