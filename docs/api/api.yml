@@ -20,11 +20,11 @@ components:
     Friend:
       type: object
       properties:
-        user_id: 
+        userId: 
           type: integer
-        friend_id:
+        friendId:
           type: integer
-        user_name:
+        userName:
           type: string
           example: "りさ"
         image:
@@ -170,9 +170,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  friend_id:
+                  friendId:
                     type: integer
-                  user_name:
+                  userName:
                     type: string
                     example: "りさ"
                   image:
@@ -195,7 +195,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: "friend_id"
+          description: "friendId"
           schema:
             type: integer
       responses:
@@ -303,9 +303,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  user_id: 
+                  userId: 
                     type: integer
-                  user_name:
+                  userName:
                     type: string
                   email:
                     type: string
@@ -316,10 +316,10 @@ paths:
                   image:
                     type: string
                     example: "https://example.com/image-01.png"
-                  background_image:
+                  backgroundImage:
                     type: string
                     example: "https://example.com/image-01.png"
-                  subscription_plan_id:
+                  subscriptionPlanId:
                     type: integer
         "400":
           $ref: "#/components/responses/BadRequest"
@@ -341,7 +341,7 @@ paths:
             schema:
               type: object
               properties:
-                user_name:
+                userName:
                   type: string
                   example: "りさ"
                 language:
@@ -350,10 +350,10 @@ paths:
                 image: 
                   type: string
                   example: "https://example.com/image-01.png"
-                background_image:
+                backgroundImage:
                   type: string
                   example: "https://example.com/image-01.png"
-                subscription_plan_id:
+                subscriptionPlanId:
                   type: integer
       responses:
         "200":
