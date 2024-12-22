@@ -123,19 +123,7 @@ const Page = () => {
     );
 
     if (filteredFriends.length === 0) {
-      return (
-        <>
-          <p className="text-sm">
-            {status === "pending"
-              ? "承認待ち"
-              : status === "approved"
-                ? "友達"
-                : status === "pending"
-                  ? "申請中"
-                  : ""}
-          </p>
-        </>
-      );
+      return null;
     }
 
     return (
@@ -145,7 +133,7 @@ const Page = () => {
             ? "承認待ち"
             : status === "approved"
               ? "友達"
-              : status === "pending"
+              : status === "request pending"
                 ? "申請中"
                 : ""}
         </p>
@@ -167,6 +155,7 @@ const Page = () => {
 
   return (
     <>
+      {/* Friend Search */}
       <div className="flex flex-col gap-2 px-10 py-6">
         <p className="text-sm font-semibold">友達追加</p>
         <form
@@ -213,7 +202,7 @@ const Page = () => {
             <div className="flex items-center gap-1">
               <button
                 onClick={handleCancel}
-                className="bg-denim rounded px-4 py-1 text-sm text-white opacity-80 hover:opacity-60"
+                className="rounded bg-gray-400 px-4 py-1 text-sm text-white opacity-80 hover:opacity-60"
               >
                 キャンセル
               </button>
@@ -228,12 +217,10 @@ const Page = () => {
         )}
         {friendList.length > 0 ? (
           <>
-            {/* Pending */}
+            {/* Pending Approval */}
             {renderFriendCards("pending")}
-
-            {/* Pending */}
-            {/* {renderFriendCards("")} */}
-
+            {/* Pending Request */}
+            {renderFriendCards("request pending")}
             {/* approved */}
             {renderFriendCards("approved")}
           </>

@@ -24,6 +24,12 @@ export async function getAllFriendData() {
       status: "approved",
       profileImage: "/sample-profile3.png",
     },
+    {
+      id: 5,
+      friendName: "Satou Jirou",
+      status: "request pending",
+      profileImage: "/sample-profile3.png",
+    },
   ];
   // return [];
 }
