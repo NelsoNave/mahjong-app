@@ -24,6 +24,11 @@ export async function searchFriendData(friendId: number): Promise<FriendData> {
   return updatedInfo;
 }
 
+export async function deleteFriend(id: number) {
+  // Todo: implement delete friend
+  return "";
+}
+
 export async function approveRequest(id: number) {
   // Todo : implement approve request
 }

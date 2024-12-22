@@ -9,6 +9,7 @@ import {
   getAllFriendData,
   approveRequest,
   denyRequest,
+  deleteFriend,
 } from "@/app/actions/friendActions";
 import FriendCard from "@/app/components/FriendCard";
 
@@ -84,8 +85,30 @@ const Page = () => {
     try {
       await denyRequest(friendIdNumber);
       alert("友達申請を拒否しました");
-      const friendList = await getAllFriendData();
-      setFriendList(friendList);
+      refreshFriendList();
+    } catch (error) {
+      console.error(error);
+      alert("友達申請の拒否に失敗しました");
+    }
+  };
+
+  // Delete friend
+  const handleDeleteFriend = async () => {
+    try {
+      const friendIdNumber = parseInt(friendId);
+      await deleteFriend(friendIdNumber);
+      alert("友達情報を削除しました");
+      refreshFriendList();
+    } catch (error) {
+      console.error(error);
+      alert("友達情報の削除に失敗しました");
+    }
+  };
+
+  const refreshFriendList = async () => {
+    try {
+      const updatedFriendList = await getAllFriendData();
+      setFriendList(updatedFriendList);
     } catch (error) {
       console.error(error);
     }
