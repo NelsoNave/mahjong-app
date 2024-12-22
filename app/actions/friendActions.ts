@@ -6,17 +6,17 @@ export async function getAllFriendData() {
 
   // dummy data
   return [
-    { id: "00000001", friendName: "Tanaka Taro", status: "pending" },
-    { id: "00000002", friendName: "Suzuki Kakeru", status: "approved" },
+    { id: 1, friendName: "Tanaka Taro", status: "pending" },
+    { id: 2, friendName: "Suzuki Kakeru", status: "approved" },
   ];
 }
 
-export async function searchFriendData(friendData: FriendData) {
+export async function searchFriendData(friendId: number): Promise<FriendData> {
   // Todo: implement search friend info
 
   // dummy data
   const updatedInfo = {
-    id: "00000002",
+    id: 3,
     friendName: "Suzuki Kakeru",
     status: "approved",
   };
