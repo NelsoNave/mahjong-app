@@ -108,7 +108,7 @@ paths:
         - friends
       responses:
         "200":
-          description: "Get all friends successfully"
+          description: "Successfully get all friends"
           content:
             application/json:
               schema:
@@ -133,8 +133,8 @@ paths:
           $ref: "#/components/responses/InternalError"
   "/friends/{id}":
     get:
-      summary: "Get a friend by id"
-      description: "Get a data from the friends table by friend_id."
+      summary: "Get friend by id"
+      description: "Get data from the friends table by friend_id."
       tags:
         - friends
       parameters:
@@ -146,7 +146,7 @@ paths:
             type: integer
       responses:
         "200":
-          description: "Get a friend successfully"
+          description: "Successfully get a friend"
           content:
             application/json:
               schema:
@@ -168,7 +168,7 @@ paths:
           $ref: "#/components/responses/InternalError"
     post:
       summary: "Send a friend request"
-      description: "Insert a data to the friends table."
+      description: "Insert data into the friends table."
       tags:
         - friends
       parameters:
@@ -180,7 +180,7 @@ paths:
             type: integer
       responses:
         "201":
-          description: "Sent a friend request successfully"
+          description: "Successfully sent a friend request"
           content:
             application/json:
               schema:
@@ -196,9 +196,9 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalError"
-    put:
+    patch:
       summary: "Approve or reject friend request"
-      description: "Update a friend status on friends table"
+      description: "Update friend status in the friends table"
       parameters:
         - name: Id
           in: path
@@ -218,7 +218,7 @@ paths:
                   enum: [accept, reject]
       responses:
         "200":
-          description: "Update a friend status successfully"
+          description: "Successfully update a friend's status"
           content:
             application/json:
               schema:
@@ -246,7 +246,7 @@ paths:
             type: integer
       responses:
         "204":
-          description: "Delete a friend successfully"
+          description: "Successfully delete a friend"
           content:
             application/json:
               schema:
@@ -262,4 +262,106 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalError"
+  "/me":
+    get:
+      summary: "Get user information"
+      description: "Returns information about the logged-in user."
+      tags:
+        - user
+      responses:
+        "200":
+          description: "Successfully get a user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id: 
+                    type: integer
+                  user_name:
+                    type: string
+                  email:
+                    type: string
+                  language:
+                    type: string
+                  image:
+                    type: string
+                  background_image:
+                    type: string
+                  subscription_plan_id:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    patch:
+      summary: "Update user information"
+      description: "Update user information for the logged-in user."
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: string
+                language:
+                  type: string
+                image: 
+                  type: string
+                background_image:
+                  type: string
+                subscription_plan_id:
+                  type: integer
+      responses:
+        "200":
+          description: "Successfully update user's information."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    delete:
+      summary: "Delete user account"
+      description: "Delete a user from the users table"
+      tags:
+        - user
+      responses:
+        "200":
+          description: "Successfully delete a user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  
+
+
 
