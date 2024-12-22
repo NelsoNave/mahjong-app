@@ -132,9 +132,9 @@ const Page: React.FC = () => {
 
   return (
     <>
-      <div className="h-full bg-pineGlade">
+      <div className="bg-pineGlade h-full">
         <div
-          className="group flex h-[15%] items-center justify-center bg-pineGlade"
+          className="bg-pineGlade group flex h-[15%] items-center justify-center"
           onClick={handleFileClick}
           style={{
             backgroundImage:
@@ -157,7 +157,7 @@ const Page: React.FC = () => {
               width="24"
               height="24"
               stroke="currentColor"
-              className="z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              className="transition-opacity duration-300 hover:text-gray-400"
             >
               <path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
             </svg>
@@ -167,6 +167,7 @@ const Page: React.FC = () => {
         <input
           type="file"
           ref={fileInputRef}
+          accept=".jpg, .png"
           style={{ display: "none" }}
           onChange={handleFileChange}
         />
@@ -271,7 +272,7 @@ const Page: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="ml-auto mt-4 w-1/4 rounded-lg bg-denim p-2 text-white hover:bg-opacity-90"
+                className="bg-denim ml-auto mt-4 w-1/4 rounded-lg p-2 text-white hover:bg-opacity-90"
               >
                 保存
               </button>
@@ -300,7 +301,7 @@ const Page: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="ml-auto mt-4 w-1/4 rounded-lg bg-denim p-2 text-white hover:bg-opacity-90"
+                className="bg-denim ml-auto mt-4 w-1/4 rounded-lg p-2 text-white hover:bg-opacity-90"
               >
                 保存
               </button>
@@ -315,7 +316,7 @@ const Page: React.FC = () => {
               <div className="flex justify-end gap-2">
                 <button
                   type="submit"
-                  className="mt-4 w-1/4 rounded-lg bg-denim px-1 py-2 text-sm text-white hover:bg-opacity-90"
+                  className="bg-denim mt-4 w-1/4 rounded-lg px-1 py-2 text-sm text-white hover:bg-opacity-90"
                   onClick={handleCloseModal}
                 >
                   キャンセル
