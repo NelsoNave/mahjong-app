@@ -16,9 +16,112 @@ datasource db {
 model User {
   id         Int      @id @default(autoincrement())
   email      String   @unique
-  user_name  String
+  userName   String
   image      String?
   language   String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  lastLoginAt DateTime?
+  friends    Friend[] @relation("UserFriends")
+  friendOf   Friend[] @relation("FriendUsers")
+  subscriptionPlanId Int?
+  subscriptionPlan SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id])
+  games Game[] @relation("CreatedBy")
+  chipResults ChipResults[] @relation("UserChipResults")
+  roundResults RoundResults[] @relation("UserRoundResults")
+  @@map("users")
+}
+
+model Friend {
+  userId    Int
+  friendId  Int
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, friendId])
+
+  user    User @relation("UserFriends", fields: [userId], references: [id])
+  friend  User @relation("FriendUsers", fields: [friendId], references: [id])
+
+  @@map("friends")
+}
+
+model SubscriptionPlan {
+  id         Int      @id @default(autoincrement())
+  name       String
+  price      Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  users      User[]
+
+  @@map("subscription_plans")
+}
+
+enum GameType {
+  FREE
+  SET
+}
+
+enum NumberOfPlayers {
+  THREE
+  FOUR
+}
+
+model Game {
+  id             Int            @id @default(autoincrement())
+  gameType       GameType
+  numberOfPlayers NumberOfPlayers
+  playedAt       DateTime
+  rate           Int
+  chipRate      Int
+  fee           Int
+  createdBy      Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user User @relation("CreatedBy", fields: [createdBy], references: [id])
+  chipResults ChipResults[] @relation("GameChipResults")
+  rounds Rounds[] @relation("GameRounds")
+  @@map("games")
+}
+
+
+model ChipResults {
+  id Int @id @default(autoincrement())
+  gameId Int
+  userId Int?
+  chipChange Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game Game @relation("GameChipResults", fields: [gameId], references: [id])
+  user User? @relation("UserChipResults", fields: [userId], references: [id])
+  @@map("chip_results")
+}
+
+model Rounds {
+  id Int @id @default(autoincrement())
+  gameId Int
+  roundNumber Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game Game @relation("GameRounds", fields: [gameId], references: [id])
+  roundResults RoundResults[] @relation("RoundResults")
+  @@map("rounds")
+}
+
+model RoundResults {
+  id Int @id @default(autoincrement())
+  roundId Int
+  userId Int?
+  scoreChange Int
+  rank Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  round Rounds @relation("RoundResults", fields: [roundId], references: [id])
+  user User? @relation("UserRoundResults", fields: [userId], references: [id])
+  @@map("round_results")
 }
