@@ -1,4 +1,5 @@
 "use server";
+
 import { UserInfo } from "@/types/user";
 
 export async function getUserInfo() {
@@ -7,11 +8,11 @@ export async function getUserInfo() {
   // dummy data
   return {
     id: "1",
-    username: "Ben Ono",
+    userName: "Ben Ono",
     language: "日本語",
     email: "benono123@gmail.com",
-    profileImage: "/icon-sample-man.jpg",
-    thumbnailImage: "",
+    image: "/icon-sample-man.jpg",
+    backgroundImage: "",
   };
 }
 
@@ -21,11 +22,11 @@ export async function updateUserInfo(updatedInfo: UserInfo) {
   // dummy data
   updatedInfo = {
     id: "00000001",
-    username: "Tanaka Taro",
+    userName: "Tanaka Taro",
     language: "日本語",
     email: "benono123@gmail.com",
-    profileImage: "/icon-sample-man.jpg",
-    thumbnailImage: "/sample-thumbnailImage.jpg",
+    image: "/icon-sample-man.jpg",
+    backgroundImage: "/sample-thumbnailImage.jpg",
   };
 
   return updatedInfo;

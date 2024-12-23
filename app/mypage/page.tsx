@@ -7,7 +7,6 @@ import UserInfoCard from "@/components/UserInfoCard";
 import { UserInfo } from "@/types/user";
 import SignOut from "@/components/SignOut";
 import Navigation from "@/components/Navigation";
-
 import { getUserInfo, updateUserInfo, deleteUser } from "@/actions/userActions";
 import { signOut } from "next-auth/react";
 
@@ -78,7 +77,7 @@ const Page: React.FC = () => {
     }
   };
 
-  // delete account
+  // Delete account
   const handleDeleteAccount = async () => {
     try {
       await deleteUser();
@@ -90,13 +89,13 @@ const Page: React.FC = () => {
     }
   };
 
-  // thumbnail image
+  // Background image
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const thumbnailImage = URL.createObjectURL(file);
+      const backgroundImage = URL.createObjectURL(file);
       if (userInfo) {
-        const updatedInfo = { ...userInfo, thumbnailImage: thumbnailImage };
+        const updatedInfo = { ...userInfo, backgroundImage: backgroundImage };
         try {
           setUserInfo(updatedInfo);
         } catch (err) {
@@ -110,23 +109,24 @@ const Page: React.FC = () => {
   return (
     <>
       <div className="bg-pineGlade h-full">
+        {/* Background image */}
         <div
           className="bg-pineGlade group flex h-[15%] items-center justify-center"
           onClick={handleFileClick}
           style={{
             backgroundImage:
-              userInfo && userInfo.thumbnailImage
-                ? `url(${userInfo.thumbnailImage})`
+              userInfo && userInfo.backgroundImage
+                ? `url(${userInfo.backgroundImage})`
                 : "none",
             backgroundColor:
-              userInfo && !userInfo.thumbnailImage
+              userInfo && !userInfo.backgroundImage
                 ? "bg-pineGlade"
                 : "transparent",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          {!userInfo?.thumbnailImage && (
+          {!userInfo?.backgroundImage && (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -140,7 +140,6 @@ const Page: React.FC = () => {
             </svg>
           )}
         </div>
-
         <input
           type="file"
           ref={fileInputRef}
@@ -148,12 +147,13 @@ const Page: React.FC = () => {
           style={{ display: "none" }}
           onChange={handleFileChange}
         />
+        {/* User profile */}
         <div className="relative h-[85%] bg-background px-7">
           <div className="absolute -top-8 left-1/2 flex h-20 w-20 -translate-x-1/2 flex-col items-center gap-0.5 rounded-full bg-white">
             {userInfo && (
               <>
                 <Image
-                  src={userInfo.profileImage}
+                  src={userInfo.image}
                   width={80}
                   height={80}
                   alt="icon"
@@ -165,6 +165,7 @@ const Page: React.FC = () => {
             )}
           </div>
           <div className="h-full">
+            {/* ID Section */}
             <div className="pt-28">
               {userInfo && (
                 <UserInfoCard
@@ -178,11 +179,11 @@ const Page: React.FC = () => {
                   }}
                 />
               )}
-              {/* Username Setting Section */}
+              {/* UserName Setting Section */}
               {userInfo && (
                 <UserInfoCard
                   label="ユーザーネーム"
-                  value={userInfo?.username}
+                  value={userInfo?.userName}
                   actionText="編集"
                   d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
                   onClick={() => setIsUsernameModalOpen(true)}
@@ -192,7 +193,7 @@ const Page: React.FC = () => {
               {userInfo && (
                 <UserInfoCard
                   label="言語設定"
-                  value={userInfo?.username}
+                  value={userInfo?.userName}
                   actionText="変更"
                   d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
                   onClick={() => setIsLanguageModalOpen(true)}
