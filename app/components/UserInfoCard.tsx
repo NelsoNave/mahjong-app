@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { UserInfoCardProps } from "@/app/types/user";
+import { UserInfoCardProps } from "@/types/user";
 
 const UserInfoCard = ({
   label,
@@ -16,7 +16,7 @@ const UserInfoCard = ({
       <p>{value}</p>
     </div>
     <div
-      className="flex cursor-pointer items-center gap-1 text-sm text-amazon"
+      className="text-amazon flex cursor-pointer items-center gap-1 text-sm"
       onClick={onClick}
     >
       <p>{actionText}</p>

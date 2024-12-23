@@ -1,5 +1,5 @@
 "use server";
-import { UserInfo } from "../types/user";
+import { UserInfo } from "@/types/user";
 
 export async function getUserInfo() {
   // Todo: implement get user info
