@@ -8,9 +8,9 @@ export type UserInfoCardProps = {
 
 export type UserInfo = {
   id: string;
-  username: string;
+  userName: string;
   language: string;
   email: string;
-  profileImage: string;
-  thumbnailImage: string;
+  image: string;
+  backgroundImage: string;
 };
