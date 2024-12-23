@@ -53,12 +53,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         where: { email: user.email },
         create: {
           email: user.email,
-          user_name: user.name || "",
+          userName: user.name || "",
           image: user.image || "",
           language: "ja",
         },
         update: {
-          user_name: user.name || "",
+          userName: user.name || "",
           image: user.image || "",
         },
       });
