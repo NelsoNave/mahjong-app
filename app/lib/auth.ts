@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,6 +16,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
     }),
+    // only for development
+    ...(process.env.NODE_ENV === "development"
+      ? [
+          CredentialsProvider({
+            name: "Test Account",
+            credentials: {
+              email: { label: "Email", type: "email" },
+              password: { label: "Password", type: "password" }
+            },
+            async authorize(credentials) {
+              if (credentials?.email === "test1@example.com") {
+                // DBからユーザー情報を取得
+                const user = await prisma.user.findUnique({
+                  where: { email: credentials.email }
+                });
+
+                if (user) {
+                  return {
+                    id: user.id.toString(),
+                    email: user.email,
+                    name: user.userName,
+                    image: user.image
+                  };
+                }
+              }
+              return null;
+            }
+          })
+        ]
+      : [])
   ],
 
   session: {
@@ -40,7 +71,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.email = token.email || "";
       session.user.name = token.name || "";
       session.user.image = token.image as string;
-
       return session;
     },
 
