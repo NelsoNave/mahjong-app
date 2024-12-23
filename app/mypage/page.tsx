@@ -82,14 +82,14 @@ const Page: React.FC = () => {
     try {
       await deleteUser();
       alert("アカウントが削除されました");
-      signOut({ callbackUrl: "/" });
+      await signOut({ callbackUrl: "/" });
     } catch (err) {
       console.error(err);
       alert("アカウントの削除に失敗しました");
     }
   };
 
-  // Background image
+  // Change background image
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -193,7 +193,7 @@ const Page: React.FC = () => {
               {userInfo && (
                 <UserInfoCard
                   label="言語設定"
-                  value={userInfo?.userName}
+                  value={userInfo?.language}
                   actionText="変更"
                   d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
                   onClick={() => setIsLanguageModalOpen(true)}
@@ -291,25 +291,25 @@ const Page: React.FC = () => {
             isOpen={isDeleteAccountModalOpen}
             onClose={handleCloseModal}
           >
-            <form className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
               <p>アカウントを削除しますか？</p>
               <div className="flex justify-end gap-2">
                 <button
-                  type="submit"
+                  type="button"
                   className="bg-denim mt-4 w-1/4 rounded-lg px-1 py-2 text-sm text-white hover:bg-opacity-90"
                   onClick={handleCloseModal}
                 >
                   キャンセル
                 </button>
                 <button
-                  type="submit"
+                  type="button"
                   className="mt-4 w-1/4 rounded-lg bg-appleBlossom px-1 py-2 text-white hover:bg-opacity-90"
                   onClick={handleDeleteAccount}
                 >
                   削除
                 </button>
               </div>
-            </form>
+            </div>
           </UserModal>
         </div>
       </div>
