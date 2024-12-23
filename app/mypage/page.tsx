@@ -51,42 +51,29 @@ const Page: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  // change username
-  const handleSaveUsername = async (newUsername: string) => {
-    if (!newUsername.trim()) {
-      alert("ユーザーネームを入力してください");
-      return;
-    }
+  // Update user info
+  const handleUpdateUserInfo = async (field: string, newValue: string) => {
+    if (field === "userName") {
+      if (!newValue.trim()) {
+        alert("ユーザーネームを入力してください");
+        return;
+      }
 
-    if (newUsername.length > 50) {
-      alert("ユーザーネームは50文字以内で入力してください");
-      return;
-    }
-
-    if (userInfo) {
-      const updatedInfo = { ...userInfo, username: newUsername };
-      try {
-        const updatedUser = await updateUserInfo(updatedInfo);
-        setUserInfo(updatedUser);
-        handleCloseModal();
-      } catch (err) {
-        console.error(err);
-        alert("ユーザーネームの更新に失敗しました");
+      if (newValue.length > 50) {
+        alert("ユーザーネームは50文字以内で入力してください");
+        return;
       }
     }
-  };
 
-  // change language
-  const handleSaveLanguage = async (newLanguage: string) => {
     if (userInfo) {
-      const updatedInfo = { ...userInfo, language: newLanguage };
+      const updatedInfo = { ...userInfo, field: newValue };
       try {
         const updatedUser = await updateUserInfo(updatedInfo);
         setUserInfo(updatedUser);
         handleCloseModal();
       } catch (err) {
         console.error(err);
-        alert("言語設定の変更に失敗しました");
+        alert("ユーザー情報の更新に失敗しました");
       }
     }
   };
@@ -247,17 +234,18 @@ const Page: React.FC = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const form = e.target as HTMLFormElement;
-                const newUsername = (form.username as HTMLInputElement).value;
-                handleSaveUsername(newUsername);
+                const name = (form.userName as HTMLInputElement).name;
+                const newValue = (form[name] as HTMLInputElement).value;
+                handleUpdateUserInfo(name, newValue);
               }}
             >
               <div className="flex flex-col gap-4">
                 <label>ユーザー名を入力してください</label>
                 <input
-                  name="username"
+                  name="userName"
                   type="text"
                   className="mt-2 w-full rounded-md border p-2"
-                  defaultValue={userInfo?.username}
+                  defaultValue={userInfo?.userName}
                 />
               </div>
               <button
@@ -274,8 +262,9 @@ const Page: React.FC = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const form = e.target as HTMLFormElement;
-                const newLanguage = (form.language as HTMLInputElement).value;
-                handleSaveLanguage(newLanguage);
+                const name = (form.language as HTMLInputElement).name;
+                const newValue = (form[name] as HTMLInputElement).value;
+                handleUpdateUserInfo(name, newValue);
               }}
             >
               <div className="flex flex-col gap-4">
