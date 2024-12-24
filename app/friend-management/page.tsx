@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FriendData } from "@/app/types/friend";
-import Navigation from "@/app/components/Navigation";
+import { FriendData } from "@/types/friend";
+import Navigation from "@/components/Navigation";
 import {
   searchFriendData,
   getAllFriendData,
   approveRequest,
   denyRequest,
   deleteFriend,
-} from "@/app/actions/friendActions";
-import FriendCard from "@/app/components/FriendCard";
+} from "@/actions/friendActions";
+import FriendCard from "@/components/FriendCard";
 
 const Page = () => {
   const [friendId, setFriendId] = useState<string>("");

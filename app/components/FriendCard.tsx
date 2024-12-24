@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { FriendData } from "@/app/types/friend";
+import { FriendData } from "@/types/friend";
 
 interface FriendCardProps extends FriendData {
   handleApprove: () => void;

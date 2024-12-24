@@ -1,0 +1,404 @@
+openapi: "3.0.3"
+
+info:
+  title: "JongReki API"
+  version: "1.0.0"
+  description: |
+    Version Strategy:
+    - Major version changes (/v1 -> /v2): Breaking changes
+    - Minor version changes: Backward compatible additions
+    - Current stable version: v1
+
+servers:
+  - url: "http://localhost:3000/api/v1"
+    description: "development server"
+  - url: "https://[render.api.url]/v1"
+    description: "production server"
+
+components:
+  schemas:
+    Friend:
+      type: object
+      properties:
+        userId: 
+          type: integer
+        friendId:
+          type: integer
+        userName:
+          type: string
+          example: "りさ"
+        image:
+          type: string
+          example: "https://example.com/image-01.png"
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, INTERNAL_ERROR]
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        requestId:
+          type: string
+          description: "デバッグ用のリクエスト識別子"
+
+  responses:
+    BadRequest:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "BAD_REQUEST"
+            message: "フレンドIDは正の整数を入力してください"
+            details:
+              field: "friends_id"
+              reason: "invalid_format"
+              value: "-1"
+            requestId: "req_123"
+    Unauthorized:
+      description: "Unauthorized"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "UNAUTHORIZED"
+            message: "認証が必要です"
+            details:
+              reason: "token_expired"
+              scope: "friends:read"
+            requestId: "req_456"
+    Forbidden:
+      description: "Forbidden"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "FORBIDDEN"
+            message: "アクセス権限がありません"
+            details:
+              reason: "insufficient_permissions"
+              scope: "friends:write"
+            requestId: "req_789"
+    NotFound:
+      description: "Not Found"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "NOT_FOUND"
+            message: "コンテンツが見つかりません"
+            details:
+              reason: "resource_not_found"
+              resource: "friends"
+            requestId: "req_101"
+    InternalError:
+      description: "Internal Server Error"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: "INTERNAL_ERROR"
+            message: "予期しないエラーが発生しました"
+            details:
+              reason: "internal_server_error"
+            requestId: "req_102"
+
+paths:
+  "/friends":
+    get:
+      summary: "Get all friends"
+      description: "Get data from the friends table including all status."
+      tags:
+        - friends
+      responses:
+        "200":
+          description: "Successfully get all friends"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    "pending":
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Friend"
+                    "accept":
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Friend"
+                    "reject":
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Friend"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  "/friends/{id}":
+    get:
+      summary: "Get friend by id"
+      description: "Get data from the friends table by friend_id."
+      tags:
+        - friends
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "friend_id"
+          schema: 
+            type: integer
+      responses:
+        "200":
+          description: "Successfully get a friend"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  friendId:
+                    type: integer
+                  userName:
+                    type: string
+                    example: "りさ"
+                  image:
+                    type: string
+                    example: "https://example.com/image-01.png"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      summary: "Send a friend request"
+      description: "Insert data into the friends table."
+      tags:
+        - friends
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "friendId"
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: "Successfully sent a friend request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "友達申請を送りました"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    patch:
+      summary: "Approve or reject friend request"
+      description: "Update friend status in the friends table"
+      tags:
+        - friends
+      parameters:
+        - name: Id
+          in: path
+          required: true
+          description: "friend_id"
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [accept, reject]
+      responses:
+        "200":
+          description: "Successfully update a friend's status"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "友達のステータスを更新しました"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    delete:
+      summary: "Delete a friend"
+      description: "Delete a friend from the friends table(physical deletion)."
+      tags:
+        - friends
+      parameters:
+        - name: Id
+          in: path
+          required: true
+          description: "friend_id"
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: "Successfully delete a friend"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "友達を削除しました"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  "/me":
+    get:
+      summary: "Get user information"
+      description: "Returns information about the logged-in user."
+      tags:
+        - user
+      responses:
+        "200":
+          description: "Successfully get a user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId: 
+                    type: integer
+                  userName:
+                    type: string
+                  email:
+                    type: string
+                    example: "example@gmail.com"
+                  language:
+                    type: string
+                    example: "日本語"
+                  image:
+                    type: string
+                    example: "https://example.com/image-01.png"
+                  backgroundImage:
+                    type: string
+                    example: "https://example.com/image-01.png"
+                  subscriptionPlanId:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    patch:
+      summary: "Update user information"
+      description: "Update user information for the logged-in user."
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userName:
+                  type: string
+                  example: "りさ"
+                language:
+                  type: string
+                  example: "English"
+                image: 
+                  type: string
+                  example: "https://example.com/image-01.png"
+                backgroundImage:
+                  type: string
+                  example: "https://example.com/image-01.png"
+                subscriptionPlanId:
+                  type: integer
+      responses:
+        "200":
+          description: "Successfully update user's information."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "アカウントを更新しました"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    delete:
+      summary: "Delete user account"
+      description: "Delete a user from the users table"
+      tags:
+        - user
+      responses:
+        "200":
+          description: "Successfully delete a user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "アカウントを削除しました"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  
+
+
+

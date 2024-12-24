@@ -2,6 +2,7 @@
 
 import { useSession, signIn } from "next-auth/react";
 import { redirect } from "next/navigation";
+
 export default function Login() {
   const { data: session, status } = useSession();
 
@@ -11,20 +12,50 @@ export default function Login() {
 
   if (!session) {
     return (
-      <>
-        <h1>Please log in</h1>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            signIn("google");
-          }}
+      <div className="flex flex-col items-center gap-4 p-4">
+        <h1 className="text-xl font-bold">ログイン</h1>
+
+        {/* Google auth */}
+        <button
+          className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100"
+          onClick={() => signIn("google")}
         >
-          <button type="submit">Sign in with Google</button>
-        </form>
-      </>
+          Googleでログイン
+        </button>
+
+        {/* test login for development */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-4">
+            <p className="mb-2 text-sm text-gray-600">開発用テストアカウント</p>
+            <form
+              className="flex flex-col gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                signIn("credentials", {
+                  email: "test1@example.com",
+                  password: "password",
+                  callbackUrl: "/",
+                });
+              }}
+            >
+              <input
+                type="email"
+                value="test1@example.com"
+                readOnly
+                className="rounded border p-2"
+              />
+              <button
+                type="submit"
+                className="rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
+              >
+                テストアカウントでログイン
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     );
   }
 
-  // Back to the home page
   redirect("/");
 }
