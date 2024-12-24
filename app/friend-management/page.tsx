@@ -229,8 +229,13 @@ const Page = () => {
             {renderFriendCards("approved")}
           </>
         ) : (
-          // Todo: insert the background image
-          <div>友達がいません</div>
+          <Image
+            src="/img-nofriend.png"
+            alt="profile"
+            width={200}
+            height={200}
+            className="h-full w-full object-cover"
+          />
         )}
       </div>
       <Navigation />
