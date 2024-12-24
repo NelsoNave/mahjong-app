@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { FriendData } from "@/types/friend";
 import Navigation from "@/components/Navigation";
 import {
@@ -46,6 +47,10 @@ const Page = () => {
     try {
       const friendIdNumber = parseInt(friendId);
       const result = await searchFriendData(friendIdNumber);
+      if (!result) {
+        alert("友達データが存在しません");
+        return;
+      }
       setFriendData(result);
     } catch (error) {
       console.error(error);
@@ -56,7 +61,7 @@ const Page = () => {
   // Send friend request
   const handleAddFriend = () => {
     if (friendData) {
-      alert(`${friendData.friendName}に友達申請を送りました`);
+      alert(`友達申請を送りました`);
       setFriendData(null);
       setFriendId("");
     }
@@ -127,7 +132,7 @@ const Page = () => {
     }
 
     return (
-      <>
+      <div className="flex flex-col">
         <p className="text-sm">
           {status === "pending"
             ? "承認待ち"
@@ -143,13 +148,13 @@ const Page = () => {
             id={friend.id}
             friendName={friend.friendName}
             status={friend.status}
-            profileImage={friend.profileImage}
+            image={friend.image}
             handleApprove={handleApprove}
             handleDenyRequest={handleDenyRequest}
             handleDeleteFriend={handleDeleteFriend}
           />
         ))}
-      </>
+      </div>
     );
   };
 
@@ -157,36 +162,20 @@ const Page = () => {
     <>
       {/* Friend Search */}
       <div className="flex flex-col gap-2 px-10 py-6">
-        <p className="text-sm font-semibold">友達追加</p>
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-center bg-background"
-        >
-          <div className="flex w-full justify-between border-b border-slate-400 px-4 py-2">
-            <input
-              type="text"
-              value={friendId}
-              onChange={(e) => setFriendId(e.target.value)}
-              placeholder="IDを入力してください"
-              className="flex-grow-[8] border-none bg-background outline-none"
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              width={20}
-              height={20}
-              onClick={handleSubmit}
-              className="flex-grow-[2]"
-            >
-              <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-          </div>
-        </form>
-        {friendData && (
-          <div className="mt-2 flex items-center justify-between rounded-md border bg-neutral-50 px-4 py-2 text-center">
-            <div className="flex items-center gap-2">
+        <div className="h-32">
+          <p className="text-sm font-semibold">友達追加</p>
+          <form
+            onSubmit={handleSubmit}
+            className="flex items-center bg-background"
+          >
+            <div className="flex w-full justify-between border-b border-slate-400 px-4 py-2">
+              <input
+                type="text"
+                value={friendId}
+                onChange={(e) => setFriendId(e.target.value)}
+                placeholder="IDを入力してください"
+                className="flex-grow-[8] border-none bg-background outline-none"
+              />
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -194,27 +183,42 @@ const Page = () => {
                 stroke="currentColor"
                 width={20}
                 height={20}
+                onClick={handleSubmit}
+                className="flex-grow-[2]"
               >
-                <path d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
-              <p>{friendData.friendName}</p>
             </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={handleCancel}
-                className="rounded bg-gray-400 px-4 py-1 text-sm text-white opacity-80 hover:opacity-60"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={handleAddFriend}
-                className="bg-amazon rounded px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
-              >
-                申請
-              </button>
+          </form>
+          {friendData && (
+            <div className="mt-2 flex items-center justify-between rounded-md border bg-neutral-50 px-4 py-2 text-center">
+              <div className="flex items-center gap-2">
+                <Image
+                  src={friendData.image}
+                  alt="profile"
+                  width={40}
+                  height={40}
+                  className="h-[40px] w-[40px] rounded-full object-cover"
+                />
+                <p>{friendData.friendName}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleCancel}
+                  className="rounded bg-gray-400 px-4 py-1 text-sm text-white opacity-80 hover:opacity-60"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleAddFriend}
+                  className="bg-amazon rounded px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
+                >
+                  申請
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         {friendList.length > 0 ? (
           <>
             {/* Pending Approval */}

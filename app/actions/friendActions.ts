@@ -10,25 +10,31 @@ export async function getAllFriendData() {
       id: 1,
       friendName: "Tanaka Taro",
       status: "pending",
-      profileImage: "/sample-profile1.jpg",
+      image: "/sample-profile1.jpg",
     },
     {
       id: 3,
       friendName: "Tanaka Hanako",
       status: "approved",
-      profileImage: "/sample-profile2.png",
+      image: "/sample-profile2.png",
     },
     {
       id: 4,
       friendName: "Satou Jirou",
       status: "approved",
-      profileImage: "/sample-profile3.png",
+      image: "/sample-profile3.png",
     },
     {
       id: 5,
       friendName: "Satou Jirou",
       status: "request pending",
-      profileImage: "/sample-profile3.png",
+      image: "/sample-profile3.png",
+    },
+    {
+      id: 6,
+      friendName: "Satou Jirou",
+      status: "request pending",
+      image: "/sample-profile3.png",
     },
   ];
   // return [];
@@ -42,7 +48,7 @@ export async function searchFriendData(friendId: number): Promise<FriendData> {
     id: 3,
     friendName: "Suzuki Kakeru",
     status: "approved",
-    profileImage: "/sample-profile2.png",
+    image: "/sample-profile2.png",
   };
 
   return updatedInfo;

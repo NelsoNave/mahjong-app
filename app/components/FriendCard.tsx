@@ -9,17 +9,17 @@ interface FriendCardProps extends FriendData {
 }
 
 const ProfileInfo = ({
-  profileImage,
+  image,
   friendName,
   id,
 }: {
-  profileImage: string;
+  image: string;
   friendName: string;
   id: number;
 }) => (
   <div className="flex flex-row items-center gap-2">
     <Image
-      src={profileImage}
+      src={image}
       alt="profile"
       width={40}
       height={40}
@@ -36,7 +36,7 @@ const FriendCard = ({
   id,
   friendName,
   status,
-  profileImage,
+  image,
   handleApprove,
   handleDenyRequest,
   handleDeleteFriend,
@@ -49,7 +49,7 @@ const FriendCard = ({
       return (
         <div className={commonStyles}>
           <ProfileInfo
-            profileImage={profileImage}
+            image={image}
             friendName={friendName}
             id={id}
           />
@@ -74,7 +74,7 @@ const FriendCard = ({
       return (
         <div className={commonStyles}>
           <ProfileInfo
-            profileImage={profileImage}
+            image={image}
             friendName={friendName}
             id={id}
           />
@@ -103,7 +103,7 @@ const FriendCard = ({
       return (
         <div className={commonStyles}>
           <ProfileInfo
-            profileImage={profileImage}
+            image={image}
             friendName={friendName}
             id={id}
           />
