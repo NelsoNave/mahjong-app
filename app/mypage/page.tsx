@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useActionState,
+  useTransition,
+} from "react";
 import Image from "next/image";
 import UserModal from "@/components/modals/UserModal";
 import UserInfoCard from "@/components/UserInfoCard";
@@ -10,7 +16,13 @@ import Navigation from "@/components/Navigation";
 import { getUserInfo, updateUserInfo, deleteUser } from "@/actions/userActions";
 import { signOut } from "next-auth/react";
 
+const initialState: ActionState = {
+  status: "initial",
+  message: "",
+};
+
 const Page: React.FC = () => {
+  const [isPending, startTransition] = useTransition();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const handleFileClick = () => {
@@ -24,6 +36,12 @@ const Page: React.FC = () => {
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
     useState(false);
 
+  // Action state
+  const [updateState, updateAction] = useActionState<ActionState, UserInfo>(
+    updateUserInfo,
+    initialState,
+  );
+
   const handleCloseModal = () => {
     setIsUsernameModalOpen(false);
     setIsLanguageModalOpen(false);
@@ -35,8 +53,8 @@ const Page: React.FC = () => {
 
     const fetchUserInfo = async () => {
       try {
-        const data = await getUserInfo();
-        setUserInfo(data);
+        const result = await getUserInfo();
+        setUserInfo(result.data as UserInfo);
       } catch (err) {
         console.error(err);
         alert("ユーザー情報の取得に失敗しました");
@@ -46,34 +64,31 @@ const Page: React.FC = () => {
     fetchUserInfo();
   }, []);
 
+  // change user info
+  useEffect(() => {
+    if (updateState.status === "success" && updateState.data) {
+      setUserInfo(updateState.data as UserInfo);
+      handleCloseModal();
+    } else if (updateState.status === "error") {
+      alert(updateState.message);
+    }
+  }, [updateState]);
+
   if (!isHydrated) {
     return <div>Loading...</div>;
   }
 
   // Update user info
   const handleUpdateUserInfo = async (field: string, newValue: string) => {
-    if (field === "userName") {
-      if (!newValue.trim()) {
-        alert("ユーザーネームを入力してください");
-        return;
-      }
+    if (!userInfo) return;
 
-      if (newValue.length > 50) {
-        alert("ユーザーネームは50文字以内で入力してください");
-        return;
-      }
-    }
-
-    if (userInfo) {
-      const updatedInfo = { ...userInfo, field: newValue };
-      try {
-        const updatedUser = await updateUserInfo(updatedInfo);
-        setUserInfo(updatedUser);
-        handleCloseModal();
-      } catch (err) {
-        console.error(err);
-        alert("ユーザー情報の更新に失敗しました");
-      }
+    const updatedInfo = { ...userInfo, [field]: newValue };
+    try {
+      startTransition(async () => {
+        await updateAction(updatedInfo);
+      });
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -251,6 +266,7 @@ const Page: React.FC = () => {
               </div>
               <button
                 type="submit"
+                disabled={isPending}
                 className="bg-denim ml-auto mt-4 w-1/4 rounded-lg p-2 text-white hover:bg-opacity-90"
               >
                 保存
