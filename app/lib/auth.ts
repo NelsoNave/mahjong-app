@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { SupportedLanguage } from "@/types/user";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -37,7 +38,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     id: user.id.toString(),
                     email: user.email,
                     name: user.userName,
-                    image: user.image
+                    image: user.image,
+                    language: user.language as SupportedLanguage
                   };
                 }
               }
@@ -71,6 +73,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.email = token.email || "";
       session.user.name = token.name || "";
       session.user.image = token.image as string;
+      session.user.language = token.language as SupportedLanguage;
       return session;
     },
 

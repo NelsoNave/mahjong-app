@@ -6,10 +6,12 @@ export type UserInfoCardProps = {
   onClick: () => void;
 };
 
+export type SupportedLanguage = 'ja' | 'en';
+
 export type UserInfo = {
   id: string;
   userName: string;
-  language: string;
+  language: SupportedLanguage;
   email: string;
   image: string;
   backgroundImage: string;

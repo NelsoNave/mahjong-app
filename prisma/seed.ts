@@ -24,23 +24,33 @@ async function main() {
   // テストユーザーの作成
   const user1 = await prisma.user.upsert({
     where: { email: 'test1@example.com' },
-    update: {},
+    update: {
+        image: 'https://xsgames.co/randomusers/assets/avatars/female/1.jpg',
+        backgroundImage: 'https://images.unsplash.com/photo-1615715874994-bb83092ef331?q=80&w=1200&auto=format&fit=crop',
+    },
     create: {
       email: 'test1@example.com',
       userName: 'Risa Yamamoto',
       language: 'ja',
       subscriptionPlanId: freePlan.id,
+      image: 'https://xsgames.co/randomusers/assets/avatars/female/1.jpg',
+      backgroundImage: 'https://images.unsplash.com/photo-1615715874994-bb83092ef331?q=80&w=1200&auto=format&fit=crop',
     },
   })
 
   const user2 = await prisma.user.upsert({
     where: { email: 'test2@example.com' },
-    update: {},
+    update: {
+        image: 'https://xsgames.co/randomusers/assets/avatars/male/2.jpg',
+        backgroundImage: 'https://images.unsplash.com/photo-1529420705456-5c7e04dd043d?q=80&w=1200&auto=format&fit=crop',
+    },
     create: {
       email: 'test2@example.com',
       userName: 'KakimaruTV',
       language: 'ja',
       subscriptionPlanId: freePlan.id,
+      image: 'https://xsgames.co/randomusers/assets/avatars/male/2.jpg',
+      backgroundImage: 'https://images.unsplash.com/photo-1529420705456-5c7e04dd043d?q=80&w=1200&auto=format&fit=crop',
     },
   })
 
