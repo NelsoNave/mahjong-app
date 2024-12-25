@@ -15,9 +15,9 @@ const page = () => {
             <SelectTypeBtn color="appleBlossom" type={3}>
               3人麻雀
             </SelectTypeBtn>
-            <SelectTypeBtn color="denim" type="free">
+            {/* <SelectTypeBtn color="denim" type="free">
               フリー麻雀
-            </SelectTypeBtn>
+            </SelectTypeBtn> */}
           </div>
         </div>
       </section>
