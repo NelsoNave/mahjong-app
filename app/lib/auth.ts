@@ -89,10 +89,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           userName: user.name || "",
           image: user.image || "",
           language: "ja",
+          subscriptionPlanId: 1, // Free plan
         },
         update: {
-          userName: user.name || "",
-          image: user.image || "",
         },
       });
       return true;
