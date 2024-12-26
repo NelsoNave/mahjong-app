@@ -22,7 +22,7 @@ const Box: React.FC<BoxProps> = ({ className, children, size = "md" }) => {
 
   return (
     <div
-      className={`${height} ${width} rounded-lg border bg-neutral-50 p-4 shadow-lg ${className}`}
+      className={`${height} ${width} flex flex-col rounded-lg border bg-neutral-50 p-4 shadow-lg ${className}`}
     >
       <div>{children}</div>
     </div>
