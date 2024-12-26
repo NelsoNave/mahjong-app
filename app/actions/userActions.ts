@@ -62,14 +62,14 @@ export const updateUserInfo = async (prevState: ActionState, updatedInfo: UserIn
   if (!updatedInfo.userName?.trim()) {
     return {
       status: "error",
-      message: "ユーザー名は必須です",
+      message: "ユーザーネームを入力してください",
     };
   } 
 
   if (updatedInfo.userName.length > 50) {
     return {
       status: "error",
-      message: "ユーザー名は50文字以内で入力してください",
+      message: "ユーザーネームは50文字以内で入力してください",
     };
   }
 
@@ -110,7 +110,7 @@ export const updateUserInfo = async (prevState: ActionState, updatedInfo: UserIn
   }
 };
 
-export const deleteUser = async () => {
+export const deleteUser = async (): Promise<ActionState> => {
   const session = await auth();
   if (!session?.user?.email) {
     return {
@@ -120,6 +120,10 @@ export const deleteUser = async () => {
   }
 
   try {
+    const flg = true
+    if (flg) {
+      throw new Error("test");
+    }
     await prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: { email: session.user?.email || "" },
@@ -133,14 +137,6 @@ export const deleteUser = async () => {
       }
 
       // Delete related data
-      await tx.roundResults.deleteMany({
-        where: { userId: user.id },
-      });
-
-      await tx.chipResults.deleteMany({
-        where: { userId: user.id },
-      });
-
       await tx.friend.deleteMany({
         where: {
           OR: [
@@ -156,16 +152,16 @@ export const deleteUser = async () => {
       });
     });
 
-    revalidatePath("/mypage");
+    //revalidatePath("/mypage");
     return {
       message: "アカウントが削除されました",
-      status: "success" as const
+      status: "success"
     };
   } catch (error) {
     console.error('Failed to delete user:', error);
     return {
       message: "アカウントの削除に失敗しました",
-      status: "error" as const
+      status: "error"
     };
   }
 };

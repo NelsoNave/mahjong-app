@@ -41,6 +41,10 @@ const Page: React.FC = () => {
     updateUserInfo,
     initialState,
   );
+  const [deleteState, deleteAction] = useActionState<ActionState>(
+    deleteUser,
+    initialState,
+  );
 
   const handleCloseModal = () => {
     setIsUsernameModalOpen(false);
@@ -56,6 +60,7 @@ const Page: React.FC = () => {
         const result = await getUserInfo();
         setUserInfo(result.data as UserInfo);
       } catch (err) {
+        console.log("xxx");
         console.error(err);
         alert("ユーザー情報の取得に失敗しました");
       }
@@ -74,6 +79,15 @@ const Page: React.FC = () => {
     }
   }, [updateState]);
 
+  // delete user info
+  useEffect(() => {
+    if (deleteState.status === "success") {
+      signOut({ callbackUrl: "/" });
+    } else if (deleteState.status === "error") {
+      alert(deleteState.message);
+    }
+  }, [deleteState]);
+
   if (!isHydrated) {
     return <div>Loading...</div>;
   }
@@ -82,12 +96,25 @@ const Page: React.FC = () => {
   const handleUpdateUserInfo = async (field: string, newValue: string) => {
     if (!userInfo) return;
 
+    if (field === "userName") {
+      if (!newValue.trim()) {
+        alert("ユーザーネームを入力してください");
+        return;
+      }
+
+      if (newValue.length > 50) {
+        alert("ユーザーネームは50文字以内で入力してください");
+        return;
+      }
+    }
+
     const updatedInfo = { ...userInfo, [field]: newValue };
     try {
       startTransition(async () => {
         await updateAction(updatedInfo);
       });
     } catch (err) {
+      // TODO Handle unexpected error
       console.error(err);
     }
   };
@@ -95,12 +122,12 @@ const Page: React.FC = () => {
   // Delete account
   const handleDeleteAccount = async () => {
     try {
-      await deleteUser();
-      alert("アカウントが削除されました");
-      await signOut({ callbackUrl: "/" });
+      startTransition(async () => {
+        await deleteAction();
+      });
     } catch (err) {
+      // TODO Handle unexpected error
       console.error(err);
-      alert("アカウントの削除に失敗しました");
     }
   };
 
