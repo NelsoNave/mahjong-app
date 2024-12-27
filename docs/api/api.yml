@@ -44,6 +44,57 @@ components:
         requestId:
           type: string
           description: "デバッグ用のリクエスト識別子"
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+        gameType:
+          type: string
+          enum: [FREE, SET]
+        numberOfPlayers:
+          type: integer
+          enum: [3, 4]
+        playedAt:
+          type: string
+          format: date-time
+        rate:
+          type: integer
+        chipRate:
+          type: integer
+        fee:
+          type: integer
+        createdBy:
+          type: integer
+        chipResults:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+              chipChange:
+                type: integer
+        rounds:
+          type: array
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userId:
+                      type: integer
+                    scoreChange:
+                      type: integer
+                    rank:
+                      type: integer
+                    position:
+                      type: integer
 
   responses:
     BadRequest:
@@ -398,7 +449,507 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalError"
+  "/games":
+    get:
+      summary: "Get all games"
+      description: "Get all games for the logged-in user"
+      tags:
+        - games
+      parameters:
+        - name: year
+          in: query
+          required: false
+          description: "Filter games by year (YYYY)"
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          description: "Number of games to return"
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          description: "Number of games to skip"
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: "Successfully retrieved games"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    
+    post:
+      summary: "Create a new game with complete results"
+      description: "Create a new game session including rounds and chip results"
+      tags:
+        - games
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - gameType
+                - numberOfPlayers
+                - rate
+                - chipRate
+                - fee
+                - rounds
+                - chipResults
+              properties:
+                gameType:
+                  type: string
+                  enum: [FREE, SET]
+                numberOfPlayers:
+                  type: integer
+                  enum: [3, 4]
+                rate:
+                  type: integer
+                chipRate:
+                  type: integer
+                fee:
+                  type: integer
+                rounds:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - roundNumber
+                      - results
+                    properties:
+                      roundNumber:
+                        type: integer
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - userId
+                            - scoreChange
+                            - rank
+                            - position
+                          properties:
+                            userId:
+                              type: integer
+                            scoreChange:
+                              type: integer
+                            rank:
+                              type: integer
+                            position:
+                              type: integer
+                chipResults:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - userId
+                      - chipChange
+                    properties:
+                      userId:
+                        type: integer
+                      chipChange:
+                        type: integer
+      responses:
+        "201":
+          description: "Successfully created a game with all results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  "/games/stats":
+    get:
+      summary: "Get game statistics"
+      description: "Get aggregated statistics for the logged-in user. If month parameter is not provided, returns all-time statistics."
+      tags:
+        - games
+      parameters:
+        - name: month
+          in: query
+          required: false
+          description: "Filter stats by month (YYYY-MM format, e.g. 2024-12)"
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{2}$'
+            example: "2024-12"
+      responses:
+        "200":
+          description: "Successfully retrieved game statistics"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastUpdatedAt:
+                    type: string
+                    format: date-time
+                    description: "最終更新日時"
+                  gameTypeCounts:
+                    type: object
+                    properties:
+                      FOUR:
+                        type: object
+                        properties:
+                          count:
+                            type: integer
+                            description: "4人麻雀の回数"
+                          percentage:
+                            type: number
+                            format: float
+                            description: "4人麻雀の割合"
+                          rankStats:
+                            type: object
+                            properties:
+                              "1":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "1着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "1着率"
+                              "2":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "2着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "2着率"
+                              "3":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "3着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "3着率"
+                              "4":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "4着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "4着率"
+                          performance:
+                            type: object
+                            properties:
+                              winRate:
+                                type: number
+                                format: float
+                                description: "連対率"
+                              averageRank:
+                                type: number
+                                format: float
+                                description: "平均着順"
+                              totalChips:
+                                type: integer
+                                description: "総チップ数"
+                              totalPoints:
+                                type: integer
+                                description: "総得点"
+                          financialSummary:
+                            type: object
+                            properties:
+                              income:
+                                type: integer
+                                description: "収入"
+                              expense:
+                                type: integer
+                                description: "支出"
+                              total:
+                                type: integer
+                                description: "収支"
+                              breakdown:
+                                type: object
+                                properties:
+                                  gameFee:
+                                    type: object
+                                    properties:
+                                      income:
+                                        type: integer
+                                        description: "ゲーム代収入"
+                                      expense:
+                                        type: integer
+                                        description: "ゲーム代支出"
+                          dailyStats:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date
+                                income:
+                                  type: integer
+                                  description: "その日の収入"
+                                expense:
+                                  type: integer
+                                  description: "その日の支出"
+                      THREE:
+                        type: object
+                        properties:
+                          count:
+                            type: integer
+                            description: "3人麻雀の回数"
+                          percentage:
+                            type: number
+                            format: float
+                            description: "3人麻雀の割合"
+                          rankStats:
+                            type: object
+                            properties:
+                              "1":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "1着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "1着率"
+                              "2":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "2着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "2着率"
+                              "3":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "3着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "3着率"
+                          performance:
+                            type: object
+                            properties:
+                              winRate:
+                                type: number
+                                format: float
+                                description: "連対率"
+                              averageRank:
+                                type: number
+                                format: float
+                                description: "平均着順"
+                              totalChips:
+                                type: integer
+                                description: "総チップ数"
+                              totalPoints:
+                                type: integer
+                                description: "総得点"
+                          financialSummary:
+                            type: object
+                            properties:
+                              income:
+                                type: integer
+                                description: "収入"
+                              expense:
+                                type: integer
+                                description: "支出"
+                              total:
+                                type: integer
+                                description: "収支"
+                              breakdown:
+                                type: object
+                                properties:
+                                  gameFee:
+                                    type: object
+                                    properties:
+                                      income:
+                                        type: integer
+                                        description: "ゲーム代収入"
+                                      expense:
+                                        type: integer
+                                        description: "ゲーム代支出"
+                          dailyStats:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date
+                                income:
+                                  type: integer
+                                  description: "その日の収入"
+                                expense:
+                                  type: integer
+                                  description: "その日の支出"
+                      FREE:
+                        type: object
+                        properties:
+                          count:
+                            type: integer
+                            description: "フリー麻雀の回数"
+                          percentage:
+                            type: number
+                            format: float
+                            description: "フリー麻雀の割合"
+                          rankStats:
+                            type: object
+                            properties:
+                              "1":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "1着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "1着率"
+                              "2":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "2着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "2着率"
+                              "3":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "3着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "3着率"
+                              "4":
+                                type: object
+                                properties:
+                                  count:
+                                    type: integer
+                                    description: "4着回数"
+                                  percentage:
+                                    type: number
+                                    format: float
+                                    description: "4着率"
+                          performance:
+                            type: object
+                            properties:
+                              winRate:
+                                type: number
+                                format: float
+                                description: "連対率"
+                              averageRank:
+                                type: number
+                                format: float
+                                description: "平均着順"
+                              totalChips:
+                                type: integer
+                                description: "総チップ数"
+                              totalPoints:
+                                type: integer
+                                description: "総得点"
+                          financialSummary:
+                            type: object
+                            properties:
+                              income:
+                                type: integer
+                                description: "収入"
+                              expense:
+                                type: integer
+                                description: "支出"
+                              total:
+                                type: integer
+                                description: "収支"
+                              breakdown:
+                                type: object
+                                properties:
+                                  gameFee:
+                                    type: object
+                                    properties:
+                                      income:
+                                        type: integer
+                                        description: "ゲーム代収入"
+                                      expense:
+                                        type: integer
+                                        description: "ゲーム代支出"
+                          dailyStats:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date
+                                income:
+                                  type: integer
+                                  description: "その日の収入"
+                                expense:
+                                  type: integer
+                                  description: "その日の支出"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  "/games/{id}":
+    get:
+      summary: "Get game by ID"
+      description: "Get detailed information about a specific game"
+      tags:
+        - games
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Game ID"
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Successfully retrieved game"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   
-
-
-
