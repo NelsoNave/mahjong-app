@@ -10,19 +10,21 @@ import {
   approveRequest,
   denyRequest,
   deleteFriend,
+  friendRequest,
 } from "@/actions/friendActions";
 import FriendCard from "@/components/FriendCard";
 
 const Page = () => {
   const [friendId, setFriendId] = useState<string>("");
-  const [friendData, setFriendData] = useState<FriendData | null>(null);
+  const [friendData, setFriendData] = useState<FriendData | ActionState | null>(null);
   const [friendList, setFriendList] = useState<FriendData[]>([]);
 
   useEffect(() => {
     const fetchAllFriendData = async () => {
       try {
         const friendList = await getAllFriendData();
-        setFriendList(friendList);
+        console.log(friendList)
+        // setFriendList(friendList);
       } catch (error) {
         console.error(error);
         alert("友達データの取得に失敗しました");
@@ -59,11 +61,23 @@ const Page = () => {
   };
 
   // Send friend request
-  const handleAddFriend = () => {
-    if (friendData) {
-      alert(`友達申請を送りました`);
-      setFriendData(null);
-      setFriendId("");
+  const handleAddFriend = async () => {
+    if(friendData && "id" in friendData) {
+      try {
+        const result = await friendRequest(friendData.id)
+
+        if ("status" in result && result.status === "error") {
+          console.error("Error:", result.message);
+          alert(result.message);
+          setFriendData(null)
+          setFriendId("")
+          return;
+        }
+        
+        // setFriendData(result)
+      } catch(error) {
+        console.error(error)
+      }
     }
   };
 
@@ -190,7 +204,7 @@ const Page = () => {
               </svg>
             </div>
           </form>
-          {friendData && (
+          {friendData && "friendName" in friendData && (
             <div className="mt-2 flex items-center justify-between rounded-md border bg-neutral-50 px-4 py-2 text-center">
               <div className="flex items-center gap-2">
                 <Image

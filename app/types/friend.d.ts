@@ -1,6 +1,6 @@
 export type FriendData = {
   id: number;
   friendName: string;
-  status: string;
+  status?: string;
   image: string;
 };
