@@ -17,7 +17,7 @@ model User {
   id         Int      @id @default(autoincrement())
   email      String   @unique
   userName   String
-  image      String?
+  image      String
   backgroundImage String?
   language   String
   createdAt  DateTime @default(now())
@@ -33,10 +33,16 @@ model User {
   @@map("users")
 }
 
+enum FriendStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model Friend {
   userId    Int
   friendId  Int
-  status    String
+  status    FriendStatus
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -117,6 +123,7 @@ model RoundResults {
   id Int @id @default(autoincrement())
   roundId Int
   userId Int?
+  position Int
   scoreChange Int
   rank Int
   createdAt DateTime @default(now())
