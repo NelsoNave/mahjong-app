@@ -1,6 +1,9 @@
-type ActionState = {
+
+
+interface ActionState<T> {
   status: "error" | "success" | "loading" | "initial";
   message?: string;
-  data?: Record<string, string | number | boolean | null | undefined>;
+  data?: T;
+  items?: T[];
 };
 
