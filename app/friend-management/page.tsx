@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { FriendData } from "@/types/friend";
-import Navigation from "@/components/Navigation";
 import {
   searchFriendData,
   getAllFriendData,
@@ -238,7 +237,6 @@ const Page = () => {
           />
         )}
       </div>
-      <Navigation />
     </>
   );
 };

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
+import Navigation from "@/components/Navigation";
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -31,9 +32,12 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <SessionProvider>
-        <body className={`${montserrat.variable} ${notoSansJp.variable} font-sans flex justify-center antialiased`}>
+        <body
+          className={`${montserrat.variable} ${notoSansJp.variable} flex justify-center font-sans antialiased`}
+        >
           <main className="flex h-screen w-full max-w-md flex-col justify-between bg-background">
             {children}
+            <Navigation />
           </main>
         </body>
       </SessionProvider>

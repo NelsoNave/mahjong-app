@@ -1,5 +1,4 @@
 import React from "react";
-import Navigation from "@/components/Navigation";
 import SelectTypeButton from "@/components/SelectTypeButtun";
 
 const page = () => {
@@ -21,7 +20,6 @@ const page = () => {
           </div>
         </div>
       </section>
-      <Navigation />
     </>
   );
 };

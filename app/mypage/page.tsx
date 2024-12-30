@@ -12,7 +12,6 @@ import UserModal from "@/components/modals/UserModal";
 import UserInfoCard from "@/components/UserInfoCard";
 import { UserInfo } from "@/types/user";
 import SignOut from "@/components/SignOut";
-import Navigation from "@/components/Navigation";
 import { getUserInfo, updateUserInfo, deleteUser } from "@/actions/userActions";
 import { signOut } from "next-auth/react";
 
@@ -356,7 +355,6 @@ const Page: React.FC = () => {
           </UserModal>
         </div>
       </div>
-      <Navigation />
     </>
   );
 };
