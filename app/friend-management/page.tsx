@@ -1,38 +1,25 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { FriendData } from "@/types/friend";
-import Navigation from "@/components/Navigation";
 import {
-  searchFriendData,
-  getAllFriendData,
   approveRequest,
-  denyRequest,
   deleteFriend,
+  denyRequest,
   friendRequest,
+  getAllFriendData,
+  searchFriendData,
 } from "@/actions/friendActions";
 import FriendCard from "@/components/FriendCard";
+import Navigation from "@/components/Navigation";
+import { FriendData } from "@/types/friend";
+import Image from "next/image";
+import React, {
+  useState
+} from "react";
 
 const Page = () => {
   const [friendId, setFriendId] = useState<string>("");
-  const [friendData, setFriendData] = useState<FriendData | ActionState | null>(null);
+  const [friendData, setFriendData] = useState<FriendData | null>(null);
   const [friendList, setFriendList] = useState<FriendData[]>([]);
-
-  useEffect(() => {
-    const fetchAllFriendData = async () => {
-      try {
-        const friendList = await getAllFriendData();
-        console.log(friendList)
-        // setFriendList(friendList);
-      } catch (error) {
-        console.error(error);
-        alert("友達データの取得に失敗しました");
-      }
-    };
-
-    fetchAllFriendData();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,19 +28,22 @@ const Page = () => {
     if (!friendId) {
       alert("IDを入力してください");
       return;
-    } else if (isNaN(parseInt(friendId))) {
+    }
+
+    const friendIdNumber = parseInt(friendId);
+    if (isNaN(friendIdNumber)) {
       alert("数値を入力してください");
       return;
     }
 
     try {
-      const friendIdNumber = parseInt(friendId);
-      const result = await searchFriendData(friendIdNumber);
-      if (!result) {
-        alert("友達データが存在しません");
-        return;
+      const result = await searchFriendData(friendIdNumber)
+      if(result.status === "success" && result.data) {
+        setFriendData(result.data)
+      } else {
+        setFriendData(null)
+        alert(result.message)
       }
-      setFriendData(result);
     } catch (error) {
       console.error(error);
       alert("友達データの検索に失敗しました");
@@ -61,23 +51,20 @@ const Page = () => {
   };
 
   // Send friend request
-  const handleAddFriend = async () => {
-    if(friendData && "id" in friendData) {
-      try {
-        const result = await friendRequest(friendData.id)
+  const handleAddFriend = async (id: number) => {
+    try {
+      const result = await friendRequest(id)
 
-        if ("status" in result && result.status === "error") {
-          console.error("Error:", result.message);
-          alert(result.message);
-          setFriendData(null)
-          setFriendId("")
-          return;
-        }
-        
-        // setFriendData(result)
-      } catch(error) {
-        console.error(error)
+      if (result.status === "success") {
+        alert(result.message);
+        setFriendData(null)
+        setFriendId("")
+      } else {
+        alert(result.message);
       }
+    } catch (error) {
+      console.error(error);
+      alert("友達申請に失敗しました");
     }
   };
 
@@ -190,21 +177,22 @@ const Page = () => {
                 placeholder="IDを入力してください"
                 className="flex-grow-[8] border-none bg-background outline-none"
               />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                width={20}
-                height={20}
-                onClick={handleSubmit}
-                className="flex-grow-[2]"
-              >
-                <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
+              <button type="submit">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  width={20}
+                  height={20}
+                  className="flex-grow-[2]"
+                >
+                  <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+              </button>
             </div>
           </form>
-          {friendData && "friendName" in friendData && (
+          {friendData && (
             <div className="mt-2 flex items-center justify-between rounded-md border bg-neutral-50 px-4 py-2 text-center">
               <div className="flex items-center gap-2">
                 <Image
@@ -224,8 +212,8 @@ const Page = () => {
                   キャンセル
                 </button>
                 <button
-                  onClick={handleAddFriend}
-                  className="bg-amazon rounded px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
+                  onClick={() => handleAddFriend(friendData.id)}
+                  className="rounded bg-amazon px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
                 >
                   申請
                 </button>

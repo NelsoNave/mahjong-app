@@ -2,10 +2,10 @@
 import { auth } from "@/lib/auth";
 import { FriendData } from "../types/friend";
 import { prisma } from "@/lib/prisma";
-import { FriendStatus } from "@prisma/client";
+import { Friend, FriendStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-export async function getAllFriendData(): Promise<ActionState> {
+export async function getAllFriendData(): Promise<ActionState<FriendData>> {
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -63,7 +63,7 @@ export async function getAllFriendData(): Promise<ActionState> {
 
 export async function searchFriendData(
   friendId: number,
-): Promise<FriendData | ActionState> {
+): Promise<ActionState<FriendData>> {
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -73,6 +73,10 @@ export async function searchFriendData(
   const currentUser = session.user.id;
   if (!currentUser) {
     return { status: "error", message: "ユーザーが見つかりません" };
+  }
+
+  if (Number(currentUser) === friendId) {
+    return {status: "error", message: "ユーザーが見つかりません"}
   }
 
   // Check friends
@@ -111,7 +115,7 @@ export async function searchFriendData(
       image: friend.image,
     };
 
-    return friendInfo;
+    return { status: "success", message: "success", data: friendInfo };
   } catch (error) {
     console.error("Failed to search friend:", error);
     return {
@@ -121,7 +125,9 @@ export async function searchFriendData(
   }
 }
 
-export async function friendRequest(id: number): Promise<ActionState> {
+export async function friendRequest(
+  id: number,
+): Promise<ActionState<FriendData>> {
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -135,7 +141,7 @@ export async function friendRequest(id: number): Promise<ActionState> {
         message: "友達申請に失敗しました",
       };
     }
-    const updateFriend = await prisma.friend.upsert({
+    const updateFriendData = await prisma.friend.upsert({
       where: {
         userId_friendId: {
           userId: currentUserId,
@@ -150,12 +156,26 @@ export async function friendRequest(id: number): Promise<ActionState> {
         friendId: id,
         status: "PENDING",
       },
+      include: {
+        friend: {
+          select: {
+            id: true,
+            userName: true,
+            image: true,
+          },
+        },
+      },
     });
 
-    revalidatePath("/friend-management")
+    const updateFriend = {
+      id: updateFriendData.friend.id,
+      friendName: updateFriendData.friend.userName,
+      image: updateFriendData.friend.image,
+    }
 
-    return { status: "success", message: "", data: updateFriend };
-    
+    revalidatePath("/friend-management");
+
+    return { status: "success", message: "success", data: updateFriend };
   } catch (error) {
     console.error("Failed to send friend request", error);
     return {
