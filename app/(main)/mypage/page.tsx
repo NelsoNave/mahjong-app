@@ -245,7 +245,7 @@ const Page: React.FC = () => {
             <div className="flex items-center justify-between py-6">
               <div className="flex flex-col gap-1 font-medium">
                 <p className="text-sm font-medium text-gray-700">
-                  アカウント変更
+                  アカウント管理
                 </p>
               </div>
               <div
