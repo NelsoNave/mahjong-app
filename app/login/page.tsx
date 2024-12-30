@@ -15,7 +15,7 @@ export default function Login() {
   if (!session) {
     return (
       <>
-        <Header context="新規登録/ログイン" />
+        <Header context="新規登録 / ログイン" />
 
         {/* Google auth */}
         <button
