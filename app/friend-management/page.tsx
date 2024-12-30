@@ -11,6 +11,7 @@ import {
   deleteFriend,
 } from "@/actions/friendActions";
 import FriendCard from "@/components/FriendCard";
+import Header from "@/components/Header";
 
 const Page = () => {
   const [friendId, setFriendId] = useState<string>("");
@@ -159,6 +160,7 @@ const Page = () => {
 
   return (
     <>
+      <Header context="友達管理" />
       {/* Friend Search */}
       <div className="flex flex-col gap-2 px-10 py-6">
         <div className="h-32">
