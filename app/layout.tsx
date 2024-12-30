@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -37,7 +36,6 @@ export default function RootLayout({
         >
           <main className="flex h-screen w-full max-w-md flex-col justify-between bg-background">
             {children}
-            <Navigation />
           </main>
         </body>
       </SessionProvider>

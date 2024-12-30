@@ -1,7 +1,9 @@
 "use client";
 
+import React from "react";
 import { useSession, signIn } from "next-auth/react";
 import { redirect } from "next/navigation";
+import Header from "../components/Header";
 
 export default function Login() {
   const { data: session, status } = useSession();
@@ -12,8 +14,8 @@ export default function Login() {
 
   if (!session) {
     return (
-      <div className="flex flex-col items-center gap-4 p-4">
-        <h1 className="text-xl font-bold">ログイン</h1>
+      <>
+        <Header context="新規登録/ログイン" />
 
         {/* Google auth */}
         <button
@@ -53,7 +55,7 @@ export default function Login() {
             </form>
           </div>
         )}
-      </div>
+      </>
     );
   }
 
