@@ -6,6 +6,7 @@ import StatsSummary from "@/components/StatsSummaryCard";
 import BalanceCard from "@/components/BalanceCard";
 import TotalCostResultCard from "@/components/TotalCostResultCard";
 import ChartComponent from "@/components/ChartComponent";
+import MonthScroll from "@/components/MonthScroll";
 
 const Page = () => {
   const [incomeData, setIncomeData] = useState([50, 75, 100, 90]);
@@ -15,6 +16,7 @@ const Page = () => {
 
   return (
     <div className="h-full">
+      <MonthScroll />
       <div className="rounded-lg bg-white p-6 shadow-md">
         <ChartComponent
           lineData={lineData}
