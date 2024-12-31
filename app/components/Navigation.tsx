@@ -63,7 +63,7 @@ const Navigation: React.FC = () => {
   ];
 
   return (
-    <nav className="border-t-0.5 flex h-16 w-full justify-between border-t-slate-500 px-4 py-3">
+    <nav className="flex h-16 w-full justify-between border-t-0.5 border-t-slate-500 px-4 py-3">
       {navItems.map((item, index) => (
         <NavItem
           key={index}

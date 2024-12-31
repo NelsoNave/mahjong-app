@@ -15,7 +15,7 @@ import SignOut from "@/components/SignOut";
 import { getUserInfo, updateUserInfo, deleteUser } from "@/actions/userActions";
 import { signOut } from "next-auth/react";
 
-const initialState: ActionState = {
+const initialState: ActionState<UserInfo> = {
   status: "initial",
   message: "",
 };
@@ -36,11 +36,14 @@ const Page: React.FC = () => {
     useState(false);
 
   // Action state
-  const [updateState, updateAction] = useActionState<ActionState, UserInfo>(
-    updateUserInfo,
+  const [updateState, updateAction] = useActionState<
+    ActionState<UserInfo>,
+    [UserInfo]
+  >(
+    async (state, [updatedInfo]) => updateUserInfo(state, updatedInfo),
     initialState,
   );
-  const [deleteState, deleteAction] = useActionState<ActionState>(
+  const [deleteState, deleteAction] = useActionState<ActionState<UserInfo>>(
     deleteUser,
     initialState,
   );
@@ -108,12 +111,12 @@ const Page: React.FC = () => {
     }
 
     const updatedInfo = { ...userInfo, [field]: newValue };
+    setUserInfo(updatedInfo);
     try {
       startTransition(async () => {
-        await updateAction(updatedInfo);
+        await updateAction([updatedInfo]);
       });
     } catch (err) {
-      // TODO Handle unexpected error
       console.error(err);
     }
   };

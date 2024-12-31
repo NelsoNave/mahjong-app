@@ -5,7 +5,7 @@ import { UserInfo } from "@/types/user";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-export const getUserInfo = async (): Promise<ActionState> => {
+export const getUserInfo = async (): Promise<ActionState<UserInfo>> => {
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -36,7 +36,7 @@ export const getUserInfo = async (): Promise<ActionState> => {
     data: {
       id: user.id.toString(),
       userName: user.userName,
-      language: user.language === 'ja' ? '日本語' : user.language === 'en' ? 'English' : user.language,
+      language:user.language === 'ja' ? '日本語' : user.language === 'en' ? 'English' : '日本語',
       email: user.email,
       image: user.image || "/icon-sample-man.jpg",
       backgroundImage: user.backgroundImage || "/sample-thumbnailImage.jpg",
@@ -50,7 +50,7 @@ export const getUserInfo = async (): Promise<ActionState> => {
 
 
 
-export const updateUserInfo = async (prevState: ActionState, updatedInfo: UserInfo): Promise<ActionState> => {
+export const updateUserInfo = async (prevState: ActionState<UserInfo>, updatedInfo: UserInfo): Promise<ActionState<UserInfo>> => {
   const session = await auth();
   if (!session?.user?.email) {
     return {
@@ -92,7 +92,7 @@ export const updateUserInfo = async (prevState: ActionState, updatedInfo: UserIn
       data: {
         id: updatedUser.id.toString(),
         userName: updatedUser.userName,
-        language: updatedUser.language === 'ja' ? '日本語' : updatedUser.language === 'en' ? 'English' : updatedUser.language,
+        language: updatedUser.language === 'ja' ? '日本語' : updatedUser.language === 'en' ? 'English' : '日本語',
         email: updatedUser.email,
         image: updatedUser.image || "/icon-sample-man.jpg",
         backgroundImage: updatedUser.backgroundImage || "/sample-thumbnailImage.jpg",
@@ -110,7 +110,7 @@ export const updateUserInfo = async (prevState: ActionState, updatedInfo: UserIn
   }
 };
 
-export const deleteUser = async (): Promise<ActionState> => {
+export const deleteUser = async (): Promise<ActionState<UserInfo>> => {
   const session = await auth();
   if (!session?.user?.email) {
     return {

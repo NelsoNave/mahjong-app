@@ -57,7 +57,7 @@ components:
           enum: [3, 4]
         playedAt:
           type: string
-          format: date-time
+          format: date
         rate:
           type: integer
         chipRate:
@@ -65,7 +65,12 @@ components:
         fee:
           type: integer
         createdBy:
-          type: integer
+          type: object
+          properties:
+            userId:
+              type: integer
+            name:
+              type: string
         chipResults:
           type: array
           items:
@@ -73,6 +78,8 @@ components:
             properties:
               userId:
                 type: integer
+              name:
+                type: string
               chipChange:
                 type: integer
         rounds:
@@ -80,6 +87,8 @@ components:
           items:
             type: object
             properties:
+              id:
+                type: integer
               roundNumber:
                 type: integer
               results:
@@ -89,6 +98,8 @@ components:
                   properties:
                     userId:
                       type: integer
+                    name:
+                      type: string
                     scoreChange:
                       type: integer
                     rank:
@@ -451,31 +462,17 @@ paths:
           $ref: "#/components/responses/InternalError"
   "/games":
     get:
-      summary: "Get all games"
-      description: "Get all games for the logged-in user"
+      summary: "Get games by year"
+      description: "Get games by year"
       tags:
         - games
       parameters:
         - name: year
           in: query
-          required: false
+          required: true
           description: "Filter games by year (YYYY)"
           schema:
-            type: integer
-        - name: limit
-          in: query
-          required: false
-          description: "Number of games to return"
-          schema:
-            type: integer
-            default: 10
-        - name: offset
-          in: query
-          required: false
-          description: "Number of games to skip"
-          schema:
-            type: integer
-            default: 0
+            type: string
       responses:
         "200":
           description: "Successfully retrieved games"
@@ -583,7 +580,7 @@ paths:
       tags:
         - games
       parameters:
-        - name: month
+        - name: yearMonth
           in: query
           required: false
           description: "Filter stats by month (YYYY-MM format, e.g. 2024-12)"
@@ -599,66 +596,59 @@ paths:
               schema:
                 type: object
                 properties:
-                  lastUpdatedAt:
-                    type: string
-                    format: date-time
-                    description: "最終更新日時"
-                  gameTypeCounts:
+                  threePlayerGameStats:
                     type: object
                     properties:
-                      FOUR:
+                      count:
+                        type: integer
+                        description: "4人麻雀の回数"
+                      percentage:
+                        type: number
+                        format: float
+                        description: "4人麻雀の割合"
+                      rankStats:
                         type: object
                         properties:
-                          count:
-                            type: integer
-                            description: "4人麻雀の回数"
-                          percentage:
-                            type: number
-                            format: float
-                            description: "4人麻雀の割合"
-                          rankStats:
+                          "1":
                             type: object
                             properties:
-                              "1":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "1着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "1着率"
-                              "2":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "2着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "2着率"
-                              "3":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "3着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "3着率"
-                              "4":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "4着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "4着率"
+                              count:
+                                type: integer
+                                description: "1着回数"
+                              percentage:
+                                type: number
+                                format: float
+                                description: "1着率"
+                          "2":
+                            type: object
+                            properties:
+                              count:
+                                type: integer
+                                description: "2着回数"
+                              percentage:
+                                type: number
+                                format: float
+                                description: "2着率"
+                          "3":
+                            type: object
+                            properties:
+                              count:
+                                type: integer
+                                description: "3着回数"
+                              percentage:
+                                type: number
+                                format: float
+                                description: "3着率"
+                          "4":
+                            type: object
+                            properties:
+                              count:
+                                type: integer
+                                description: "4着回数"
+                              percentage:
+                                type: number
+                                format: float
+                                description: "4着率"
                           performance:
                             type: object
                             properties:
