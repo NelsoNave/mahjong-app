@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { FriendData } from "@/types/friend";
-import Navigation from "@/components/Navigation";
 import {
   searchFriendData,
   getAllFriendData,
@@ -12,6 +11,7 @@ import {
   deleteFriend,
 } from "@/actions/friendActions";
 import FriendCard from "@/components/FriendCard";
+import Header from "@/components/Header";
 
 const Page = () => {
   const [friendId, setFriendId] = useState<string>("");
@@ -160,6 +160,7 @@ const Page = () => {
 
   return (
     <>
+      <Header context="友達管理" />
       {/* Friend Search */}
       <div className="flex flex-col gap-2 px-10 py-6">
         <div className="h-32">
@@ -238,7 +239,6 @@ const Page = () => {
           />
         )}
       </div>
-      <Navigation />
     </>
   );
 };

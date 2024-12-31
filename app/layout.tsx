@@ -31,7 +31,9 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <SessionProvider>
-        <body className={`${montserrat.variable} ${notoSansJp.variable} font-sans flex justify-center antialiased`}>
+        <body
+          className={`${montserrat.variable} ${notoSansJp.variable} flex justify-center font-sans antialiased`}
+        >
           <main className="flex h-screen w-full max-w-md flex-col justify-between bg-background">
             {children}
           </main>
