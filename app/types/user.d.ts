@@ -7,12 +7,14 @@ export type UserInfoCardProps = {
 };
 
 export type SupportedLanguage = 'ja' | 'en';
+export type DisplayLanguage = '日本語' | 'English';
 
 export type UserInfo = {
   id: string;
   userName: string;
-  language: SupportedLanguage;
+  language: DisplayLanguage;
   email: string;
   image: string;
   backgroundImage: string;
+  subscriptionPlan: string;
 };

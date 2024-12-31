@@ -17,6 +17,9 @@ export default {
         amazon: "#2D6B47",
         denim: "#1876D2",
       },
+      fontFamily: {
+        sans: ['var(--font-montserrat)', 'var(--font-notoSansJp)'],
+      },
       borderWidth: {
         "0.5": "0.5px",
       },

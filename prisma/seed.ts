@@ -88,24 +88,30 @@ async function main() {
           roundResults: {
             create: [
               {
-                userId: user1.id,
+                user: {
+                  connect: { id: user1.id },
+                },
                 scoreChange: 60,
                 rank: 1,
+                position: 1,
               },
               {
-                userId: user2.id,
+                user: {
+                  connect: { id: user2.id },
+                },
                 scoreChange: 22,
                 rank: 2,
+                position: 2,
               },
               {
-                userId: null,
                 scoreChange: -10,
                 rank: 3,
+                position: 3,
               },
               {
-                userId: null,
                 scoreChange: -72,
                 rank: 4,
+                position: 4,
               },
             ],
           },
