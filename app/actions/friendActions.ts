@@ -2,7 +2,7 @@
 import { auth } from "@/lib/auth";
 import { FriendData } from "../types/friend";
 import { prisma } from "@/lib/prisma";
-import { Friend, FriendStatus } from "@prisma/client";
+import { FriendStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function getAllFriendData(): Promise<ActionState<FriendData>> {
@@ -11,54 +11,43 @@ export async function getAllFriendData(): Promise<ActionState<FriendData>> {
     return { status: "error", message: "認証されていません" };
   }
 
-  const friends = await prisma.friend.findMany();
+  const user = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+  });
+
+  if (!user) {
+    return { status: "error", message: "認証されていません" };
+  }
+
+  const friendsData = await prisma.friend.findMany({
+    where: {
+      OR: [{ userId: user.id }, { friendId: user.id }],
+    },
+    include: {
+      friend: {
+        select: {
+          id: true,
+          userName: true,
+          image: true,
+        },
+      },
+    },
+  });
+
+  const friends: FriendData[] = friendsData.map((friend) => ({
+    id: friend.friend?.id,
+    friendName: friend.friend?.userName || "Unknown",
+    image: friend.friend?.image || "",
+    status: friend.status || undefined,
+  }));
 
   return {
-    data: {
-      // status: friends;
-      // userId: number;
-      // friendId: number;
-      // createdAt: Date;
-      // updatedAt: Date;
-    },
-    message: "success",
+    message: "すべての友達データを取得しました",
     status: "success",
+    items: friends,
   };
-
-  // dummy data
-  // return [
-  //   {
-  //     id: 1,
-  //     friendName: "Tanaka Taro",
-  //     status: "pending",
-  //     image: "/sample-profile1.jpg",
-  //   },
-  //   {
-  //     id: 3,
-  //     friendName: "Tanaka Hanako",
-  //     status: "approved",
-  //     image: "/sample-profile2.png",
-  //   },
-  //   {
-  //     id: 4,
-  //     friendName: "Satou Jirou",
-  //     status: "approved",
-  //     image: "/sample-profile3.png",
-  //   },
-  //   {
-  //     id: 5,
-  //     friendName: "Satou Jirou",
-  //     status: "request pending",
-  //     image: "/sample-profile3.png",
-  //   },
-  //   {
-  //     id: 6,
-  //     friendName: "Satou Jirou",
-  //     status: "request pending",
-  //     image: "/sample-profile3.png",
-  //   },
-  // ];
-  // return [];
 }
 
 export async function searchFriendData(
@@ -70,13 +59,18 @@ export async function searchFriendData(
   }
 
   // Get user_id
-  const currentUser = session.user.id;
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+  });
+
   if (!currentUser) {
-    return { status: "error", message: "ユーザーが見つかりません" };
+    return { status: "error", message: "認証されていません" };
   }
 
-  if (Number(currentUser) === friendId) {
-    return {status: "error", message: "ユーザーが見つかりません"}
+  if (currentUser.id === friendId) {
+    return { status: "error", message: "ユーザーが見つかりません" };
   }
 
   // Check friends
@@ -84,7 +78,7 @@ export async function searchFriendData(
     const existingFriend = await prisma.friend.findUnique({
       where: {
         userId_friendId: {
-          userId: Number(session.user.id),
+          userId: currentUser.id,
           friendId: friendId,
         },
       },
@@ -132,19 +126,23 @@ export async function friendRequest(
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
   }
-  const currentUserId = Number(session.user.id);
+
+  // Get user_id
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+  });
+
+  if (!currentUser) {
+    return { status: "error", message: "認証されていません" };
+  }
 
   try {
-    if (currentUserId === id) {
-      return {
-        status: "error",
-        message: "友達申請に失敗しました",
-      };
-    }
     const updateFriendData = await prisma.friend.upsert({
       where: {
         userId_friendId: {
-          userId: currentUserId,
+          userId: currentUser.id,
           friendId: id,
         },
       },
@@ -152,7 +150,7 @@ export async function friendRequest(
         status: "PENDING",
       },
       create: {
-        userId: currentUserId,
+        userId: currentUser.id,
         friendId: id,
         status: "PENDING",
       },
@@ -171,11 +169,11 @@ export async function friendRequest(
       id: updateFriendData.friend.id,
       friendName: updateFriendData.friend.userName,
       image: updateFriendData.friend.image,
-    }
+    };
 
     revalidatePath("/friend-management");
 
-    return { status: "success", message: "success", data: updateFriend };
+    return { status: "success", message: "申請しました", data: updateFriend };
   } catch (error) {
     console.error("Failed to send friend request", error);
     return {
@@ -185,24 +183,121 @@ export async function friendRequest(
   }
 }
 
-export async function deleteFriend(id: number) {
-  // Todo: implement delete friend
-  return "";
+export async function deleteFriend(
+  id: number,
+): Promise<ActionState<FriendData>> {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return { status: "error", message: "認証されていません" };
+  }
+
+  // Get user_id
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+  });
+
+  if (!currentUser) {
+    return { status: "error", message: "認証されていません" };
+  }
+
+  try {
+    await prisma.friend.delete({
+      where: {
+        userId_friendId: {
+          userId: currentUser.id,
+          friendId: id,
+        },
+      },
+    });
+    revalidatePath("/friend-management");
+    revalidatePath("/test");
+    return { status: "success", message: "削除しました" };
+  } catch (error) {
+    console.error("Failed to delete a friend", error);
+    return { status: "error", message: "削除に失敗しました" };
+  }
 }
 
-export async function approveRequest(id: number) {
-  // Todo : implement approve request
-  // dummy data
-  const updatedInfo = {
-    id: 3,
-    friendName: "Suzuki Kakeru",
-    status: "approved",
-    image: "/sample-profile2.png",
-  };
+export async function approveRequest(
+  id: number,
+): Promise<ActionState<FriendData>> {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return { status: "error", message: "認証されていません" };
+  }
 
-  return updatedInfo;
+  // Get user_id
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+  });
+
+  if (!currentUser) {
+    return { status: "error", message: "認証されていません" };
+  }
+
+  try {
+    await prisma.friend.update({
+      where: {
+        userId_friendId: {
+          userId: currentUser.id,
+          friendId: id,
+        },
+      },
+      data: {
+        status: "ACCEPTED",
+      },
+    });
+
+    revalidatePath("/friend-management");
+    revalidatePath("/test");
+    return { status: "success", message: "承認しました" };
+  } catch (error) {
+    console.error("Failed to approve friend request", error);
+    return { status: "error", message: "承認に失敗しました" };
+  }
 }
 
-export async function denyRequest(id: number) {
-  // Todo : implement deny request
+export async function denyRequest(
+  id: number,
+): Promise<ActionState<FriendData>> {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return { status: "error", message: "認証されていません" };
+  }
+
+  // Get user_id
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+  });
+
+  if (!currentUser) {
+    return { status: "error", message: "認証されていません" };
+  }
+
+  try {
+    await prisma.friend.update({
+      where: {
+        userId_friendId: {
+          userId: currentUser.id,
+          friendId: id,
+        },
+      },
+      data: {
+        status: "REJECTED",
+      },
+    });
+
+    revalidatePath("/friend-management");
+    revalidatePath("/test");
+    return { status: "success", message: "拒否しました" };
+  } catch (error) {
+    console.error("Failed to approve friend request", error);
+    return { status: "error", message: "拒否に失敗しました" };
+  }
 }

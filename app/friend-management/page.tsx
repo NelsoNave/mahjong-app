@@ -21,6 +21,7 @@ const Page = () => {
   const [friendData, setFriendData] = useState<FriendData | null>(null);
   const [friendList, setFriendList] = useState<FriendData[]>([]);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
