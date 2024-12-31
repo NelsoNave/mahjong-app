@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 type Date = string;
 interface GroupedItems {
@@ -26,9 +26,15 @@ const MonthScroll = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const buttonContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Todo: 取得したデータの最新月のデータを表示するようにする
+  const getLatestMonth = (items: Date[]): string => {
+    const sortedItems = items.sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+    );
+    return sortedItems[0].slice(0, 7);
+  };
+
   const [selectedMonth, setSelectedMonth] = useState<string>(
-    new Date().toISOString().slice(0, 7),
+    getLatestMonth(initialItems),
   );
 
   const groupItemsByMonth = (items: Date[]): GroupedItems[] => {
@@ -82,6 +88,25 @@ const MonthScroll = () => {
       loadMoreItems();
     }
   };
+
+  useEffect(() => {
+    if (displayedItems.length > 0) {
+      if (buttonContainerRef.current) {
+        const latestMonthButton = buttonContainerRef.current.querySelector(
+          `[data-month-btn="${selectedMonth}"]`,
+        );
+
+        const container = buttonContainerRef.current;
+        const buttonOffset = (latestMonthButton as HTMLElement).offsetLeft;
+        const containerWidth = container.clientWidth;
+        const buttonWidth = (latestMonthButton as HTMLElement).offsetWidth;
+
+        const scrollPosition = buttonOffset + buttonWidth - containerWidth;
+        container.scrollLeft = scrollPosition;
+      }
+    }
+  }, []);
+
   return (
     <div className="flex w-full flex-col">
       <div
