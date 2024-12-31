@@ -8,6 +8,7 @@ import TotalCostResultCard from "@/components/TotalCostResultCard";
 import ChartComponent from "@/components/ChartComponent";
 import MonthScroll from "@/components/MonthScroll";
 import { useStatsStore } from "@/store/useStatsStore";
+import Header from "@/components/Header";
 
 const Page = () => {
   // Todo : fetch the result data
@@ -18,6 +19,7 @@ const Page = () => {
 
   return (
     <div className="h-full">
+      <Header context="成績" />
       <div className="flex w-[128px] justify-between rounded-xl bg-lightPineGlade px-2 py-1 text-black">
         <button
           className={`${
