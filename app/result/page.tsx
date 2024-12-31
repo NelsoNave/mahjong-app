@@ -1,6 +1,6 @@
 "use client";
 
-import { React, useState } from "react";
+import { useState } from "react";
 import Box from "@/components/Box";
 import StatsSummary from "@/components/StatsSummaryCard";
 import BalanceCard from "@/components/BalanceCard";
@@ -25,7 +25,7 @@ const Page = () => {
 
   return (
     <div className="h-full">
-      <div className="bg-lightPineGlade flex w-[128px] justify-between rounded-xl px-2 py-1 text-black">
+      <div className="flex w-[128px] justify-between rounded-xl bg-lightPineGlade px-2 py-1 text-black">
         <button
           className={`${
             isFullChart ? "bg-pineGlade font-semibold" : ""
@@ -43,7 +43,7 @@ const Page = () => {
           総合
         </button>
       </div>
-      <MonthScroll />
+      {isFullChart && <MonthScroll />}
       <div className="rounded-lg bg-white p-6 shadow-md">
         <ChartComponent
           lineData={lineData}
