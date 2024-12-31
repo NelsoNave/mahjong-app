@@ -3,4 +3,5 @@ export type FriendData = {
   friendName: string;
   status?: string;
   image: string;
+  isSelfRequester?: boolean;
 };

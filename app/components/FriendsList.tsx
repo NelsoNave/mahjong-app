@@ -3,13 +3,13 @@ type Props = {
 };
 
 import { FriendData } from "@/types/friend";
-import FriendCardTest from "./FriendCardTest";
+import FriendCard from "./FriendCard";
 
 const FriendsList = ({ friends }: Props) => {
   return (
     <div>
       {friends.map((friend) => (
-        <FriendCardTest
+        <FriendCard
           key={friend.id}
           id={friend.id}
           friendName={friend.friendName}

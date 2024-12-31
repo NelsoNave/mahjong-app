@@ -1,30 +1,47 @@
 "use client";
 
 type Props = {
-  status: string;
+  id: number;
+  status?: string;
+  isSelfRequester?: boolean;
+  onRequest: (id: number) => void;
+  onCancel: () => void;
   onAccepted: () => void;
   onRejected: () => void;
   onDelete: () => void;
 };
 
-const FriendButtons = ({ status, onAccepted, onRejected, onDelete }: Props) => {
+const FriendButtons = ({
+  id,
+  status,
+  isSelfRequester,
+  onRequest,
+  onCancel,
+  onAccepted,
+  onRejected,
+  onDelete,
+}: Props) => {
   switch (status) {
     case "PENDING":
       return (
-        <div className="flex items-center gap-1">
-          <button
-            className="rounded bg-appleBlossom px-4 py-1 text-sm text-white hover:opacity-90"
-            onClick={onRejected}
-          >
-            拒否
-          </button>
-          <button
-            className="rounded bg-amazon px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
-            onClick={onAccepted}
-          >
-            承認
-          </button>
-        </div>
+        <>
+          {isSelfRequester && (
+            <div className="flex items-center gap-1">
+              <button
+                className="rounded bg-appleBlossom px-4 py-1 text-sm text-white hover:opacity-90"
+                onClick={onRejected}
+              >
+                拒否
+              </button>
+              <button
+                className="rounded bg-amazon px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
+                onClick={onAccepted}
+              >
+                承認
+              </button>
+            </div>
+          )}
+        </>
       );
 
     case "ACCEPTED":
@@ -53,7 +70,22 @@ const FriendButtons = ({ status, onAccepted, onRejected, onDelete }: Props) => {
       return null;
 
     default:
-      return null;
+      return (
+        <div className="flex items-center gap-1">
+          <button
+            className="rounded bg-appleBlossom px-4 py-1 text-sm text-white hover:opacity-90"
+            onClick={onCancel}
+          >
+            キャンセル
+          </button>
+          <button
+            className="rounded bg-amazon px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
+            onClick={() => onRequest(id)}
+          >
+            申請
+          </button>
+        </div>
+      );
   }
 };
 

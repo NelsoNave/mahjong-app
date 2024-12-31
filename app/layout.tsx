@@ -4,19 +4,20 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
+import { FriendsProvider } from "./components/FriendsContext";
 
 const montserrat = Montserrat({
-  subsets: ['latin'],
-  display: 'swap',
+  subsets: ["latin"],
+  display: "swap",
   weight: ["300", "500", "700"],
-  variable: '--font-montserrat',
-})
+  variable: "--font-montserrat",
+});
 
 const notoSansJp = Noto_Sans_JP({
-  subsets: ['latin-ext'],
-  display: 'swap',
-  variable: '--font-notoSansJp',
-})
+  subsets: ["latin-ext"],
+  display: "swap",
+  variable: "--font-notoSansJp",
+});
 
 export const metadata: Metadata = {
   title: "Mahjong-app",
@@ -31,11 +32,15 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <SessionProvider>
-        <body className={`${montserrat.variable} ${notoSansJp.variable} font-sans flex justify-center antialiased`}>
-          <main className="flex h-screen w-full max-w-md flex-col justify-between bg-background">
-            {children}
-          </main>
-        </body>
+        <FriendsProvider>
+          <body
+            className={`${montserrat.variable} ${notoSansJp.variable} flex justify-center font-sans antialiased`}
+          >
+            <main className="flex h-screen w-full max-w-md flex-col justify-between bg-background">
+              {children}
+            </main>
+          </body>
+        </FriendsProvider>
       </SessionProvider>
     </html>
   );

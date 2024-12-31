@@ -36,11 +36,14 @@ export async function getAllFriendData(): Promise<ActionState<FriendData>> {
     },
   });
 
+
+
   const friends: FriendData[] = friendsData.map((friend) => ({
     id: friend.friend?.id,
     friendName: friend.friend?.userName || "Unknown",
     image: friend.friend?.image || "",
     status: friend.status || undefined,
+    isSelfRequester: friend.userId === user.id,
   }));
 
   return {
