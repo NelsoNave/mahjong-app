@@ -19,7 +19,7 @@ const SelectTypeButton = ({ children, type, color }: Props) => {
   const router = useRouter();
 
   const handleClick = (type: string | number) => {
-    router.push(`/new-match-registration/${type}`);
+    router.push(`/new-game/${type}`);
   };
 
   return (
