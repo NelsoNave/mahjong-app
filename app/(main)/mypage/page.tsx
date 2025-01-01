@@ -12,7 +12,6 @@ import UserModal from "@/components/modals/UserModal";
 import UserInfoCard from "@/components/UserInfoCard";
 import { UserInfo } from "@/types/user";
 import SignOut from "@/components/SignOut";
-import Navigation from "@/components/Navigation";
 import { getUserInfo, updateUserInfo, deleteUser } from "@/actions/userActions";
 import { signOut } from "next-auth/react";
 
@@ -249,7 +248,7 @@ const Page: React.FC = () => {
             <div className="flex items-center justify-between py-6">
               <div className="flex flex-col gap-1 font-medium">
                 <p className="text-sm font-medium text-gray-700">
-                  アカウント変更
+                  アカウント管理
                 </p>
               </div>
               <div
@@ -359,7 +358,6 @@ const Page: React.FC = () => {
           </UserModal>
         </div>
       </div>
-      <Navigation />
     </>
   );
 };

@@ -17,10 +17,13 @@ export default {
         denim: "#1876D2",
       },
       fontFamily: {
-        sans: ['var(--font-montserrat)', 'var(--font-notoSansJp)'],
+        sans: ["var(--font-montserrat)", "var(--font-notoSansJp)"],
       },
       borderWidth: {
         "0.5": "0.5px",
+      },
+      boxShadow: {
+        bottom: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
     },
   },

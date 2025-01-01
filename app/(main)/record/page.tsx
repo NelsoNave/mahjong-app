@@ -1,11 +1,11 @@
 import React from "react";
-import Navigation from "@/components/Navigation";
+import Header from "@/components/Header";
 
 const page = () => {
   return (
     <>
+      <Header context="履歴" />
       <div>Record page</div>
-      <Navigation />
     </>
   );
 };
