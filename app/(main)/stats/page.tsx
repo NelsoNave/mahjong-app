@@ -25,6 +25,7 @@ const Page = () => {
     isFourPlayers,
     gameStats,
     targetDate,
+    setIsFourPlayers,
     setGameStats,
     setTargetDate,
   } = useStatsStore();
@@ -32,11 +33,13 @@ const Page = () => {
   const handleMonthView = () => {
     setTargetDate(selectedMonth);
     setMonthView();
+    setIsFourPlayers();
   };
 
   const handleOverallView = () => {
     setTargetDate("");
     setOverallView();
+    setIsFourPlayers();
   };
 
   useEffect(() => {
