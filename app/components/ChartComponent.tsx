@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +14,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { GameStats } from "@/types/game";
+import { useStatsStore } from "@/store/useStatsStore";
 
 ChartJS.register(
   CategoryScale,
@@ -29,21 +31,46 @@ ChartJS.register(
 );
 
 interface ChartProps {
-  lineData: number[];
-  incomeData: number[];
-  expenseData: number[];
+  gameStats: GameStats;
 }
 
-const ChartComponent = ({ lineData, incomeData, expenseData }: ChartProps) => {
+const ChartComponent = ({ gameStats }: ChartProps) => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
+  const { isFourPlayers } = useStatsStore();
+  const [date, setDate] = useState<Date[]>([]);
+  const [income, setIncome] = useState<number[]>([]);
+  const [expense, setExpense] = useState<number[]>([]);
+
+  const getFinancialStat = () => {
+    return isFourPlayers
+      ? gameStats.fourPlayerGameStats.dailyStats
+      : gameStats.threePlayerGameStats.dailyStats;
+  };
+
+  const dailyStats = getFinancialStat();
 
   useEffect(() => {
+    let dateData: Date[] = [];
+    let incomeData: number[] = [];
+    let expenseData: number[] = [];
+
+    dailyStats.map((stat) => {
+      dateData = [...dateData, stat.date];
+      incomeData = [...incomeData, stat.income];
+      expenseData = [...expenseData, stat.expense];
+
+      setDate(dateData);
+      setIncome(incomeData);
+      setExpense(expenseData);
+    });
+
     const data = {
-      labels: ["12/24", "12/26", "12/27", "12/28"],
+      labels: date,
+
       datasets: [
         {
           label: "総合",
-          data: lineData,
+          data: [23, 11, 33, 44], // TODO: 総合データが用意され次第
           borderColor: "#2D6B47",
           backgroundColor: "#2D6B47",
           fill: false,
@@ -54,7 +81,7 @@ const ChartComponent = ({ lineData, incomeData, expenseData }: ChartProps) => {
 
         {
           label: "収入",
-          data: incomeData,
+          data: income,
           borderColor: "#A7C7E7",
           backgroundColor: "#A7C7E7",
           fill: true,
@@ -63,7 +90,7 @@ const ChartComponent = ({ lineData, incomeData, expenseData }: ChartProps) => {
         },
         {
           label: "支出",
-          data: expenseData,
+          data: expense,
           borderColor: "#F1D0C5",
           backgroundColor: "#F1D0C5",
           fill: true,
@@ -119,7 +146,7 @@ const ChartComponent = ({ lineData, incomeData, expenseData }: ChartProps) => {
         if (chart) chart.destroy();
       };
     }
-  }, [lineData, incomeData, expenseData]);
+  }, []);
 
   return <canvas ref={chartRef}></canvas>;
 };

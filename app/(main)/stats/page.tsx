@@ -88,11 +88,7 @@ const Page = () => {
       </div>
       {isMonthlyView && <MonthScroll />}
       <div className="rounded-lg bg-white p-6 shadow-md">
-        <ChartComponent
-          lineData={lineData}
-          incomeData={incomeData}
-          expenseData={expenseData}
-        />
+        <ChartComponent gameStats={gameStats} />
       </div>
       <Box>
         <StatsSummary gameStats={gameStats} />
