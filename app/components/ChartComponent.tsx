@@ -32,15 +32,9 @@ interface ChartProps {
   lineData: number[];
   incomeData: number[];
   expenseData: number[];
-  isFullChart: boolean;
 }
 
-const ChartComponent = ({
-  lineData,
-  incomeData,
-  expenseData,
-  isFullChart,
-}: ChartProps) => {
+const ChartComponent = ({ lineData, incomeData, expenseData }: ChartProps) => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -57,28 +51,25 @@ const ChartComponent = ({
           tension: 0.3,
           zIndex: 2,
         },
-        ...(isFullChart
-          ? [
-              {
-                label: "収入",
-                data: incomeData,
-                borderColor: "#A7C7E7",
-                backgroundColor: "#A7C7E7",
-                fill: true,
-                type: "bar",
-                zIndex: 1,
-              },
-              {
-                label: "支出",
-                data: expenseData,
-                borderColor: "#F1D0C5",
-                backgroundColor: "#F1D0C5",
-                fill: true,
-                type: "bar",
-                zIndex: 1,
-              },
-            ]
-          : []),
+
+        {
+          label: "収入",
+          data: incomeData,
+          borderColor: "#A7C7E7",
+          backgroundColor: "#A7C7E7",
+          fill: true,
+          type: "bar",
+          zIndex: 1,
+        },
+        {
+          label: "支出",
+          data: expenseData,
+          borderColor: "#F1D0C5",
+          backgroundColor: "#F1D0C5",
+          fill: true,
+          type: "bar",
+          zIndex: 1,
+        },
       ],
     };
 
@@ -128,7 +119,7 @@ const ChartComponent = ({
         if (chart) chart.destroy();
       };
     }
-  }, [lineData, incomeData, expenseData, isFullChart]);
+  }, [lineData, incomeData, expenseData]);
 
   return <canvas ref={chartRef}></canvas>;
 };

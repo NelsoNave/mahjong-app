@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@/components/Box";
 import StatsSummary from "@/components/StatsSummaryCard";
 import BalanceCard from "@/components/BalanceCard";
@@ -9,13 +9,58 @@ import ChartComponent from "@/components/ChartComponent";
 import MonthScroll from "@/components/MonthScroll";
 import { useStatsStore } from "@/store/useStatsStore";
 import Header from "@/components/Header";
+import { getGameStats } from "@/actions/gameStatsActions";
+import { GameInfo, GameStats } from "@/types/game";
 
 const Page = () => {
   // Todo : fetch the result data
   const [incomeData, setIncomeData] = useState([50, 75, 100, 90]);
   const [expenseData, setExpenseData] = useState([30, 45, 60, 50]);
   const [lineData, setLineData] = useState([20, 40, 60, 50]);
-  const { isMonthlyView, setMonthView, setOverallView } = useStatsStore();
+  const {
+    selectedMonth,
+    isMonthlyView,
+    setMonthView,
+    setOverallView,
+    isFourPlayers,
+    gameStats,
+    targetDate,
+    setGameStats,
+    setTargetDate,
+  } = useStatsStore();
+
+  const handleMonthView = () => {
+    setTargetDate(selectedMonth);
+    setMonthView();
+  };
+
+  const handleOverallView = () => {
+    setTargetDate("");
+    setOverallView();
+  };
+
+  useEffect(() => {
+    const fetchGameStats = async () => {
+      try {
+        console.log(targetDate);
+        const result = await getGameStats(targetDate);
+        console.log(result);
+
+        if (result.status === "success") {
+          alert("データの取得に成功しました");
+          if (result.data) {
+            setGameStats(result.data);
+          }
+        } else {
+          alert("データの取得に失敗しました");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchGameStats();
+  }, [isMonthlyView]); // 月指定時と、総合表示の切り替えの時に処理実行する
 
   return (
     <div className="h-full">
@@ -25,7 +70,7 @@ const Page = () => {
           className={`${
             isMonthlyView ? "bg-pineGlade font-semibold" : ""
           } rounded-lg px-3 py-1 transition-all duration-300`}
-          onClick={() => setMonthView()}
+          onClick={handleMonthView}
         >
           月別
         </button>
@@ -33,7 +78,7 @@ const Page = () => {
           className={`${
             !isMonthlyView ? "bg-pineGlade font-semibold" : ""
           } rounded-lg px-3 py-1 transition-all duration-300`}
-          onClick={() => setOverallView()}
+          onClick={handleOverallView}
         >
           総合
         </button>
@@ -44,18 +89,21 @@ const Page = () => {
           lineData={lineData}
           incomeData={incomeData}
           expenseData={expenseData}
-          isFullChart={isMonthlyView}
         />
       </div>
       <Box>
-        <StatsSummary />
+        <StatsSummary gameStats={gameStats} />
       </Box>
       <div className="flex h-full">
         <Box size="sm">
-          <BalanceCard />
+          {isFourPlayers ? (
+            <BalanceCard gameStats={gameStats} />
+          ) : (
+            <BalanceCard gameStats={gameStats} />
+          )}
         </Box>
         <Box size="sm">
-          <TotalCostResultCard />
+          <TotalCostResultCard gameStats={gameStats} />
         </Box>
       </div>
     </div>
