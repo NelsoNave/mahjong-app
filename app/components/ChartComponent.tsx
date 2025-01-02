@@ -33,7 +33,7 @@ ChartJS.register(
 );
 
 interface ChartProps {
-  gameStats: GameStats;
+  gameStats: GameStats | null;
 }
 
 const formatDate = (date: Date) => {
@@ -61,14 +61,21 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
   const dailyStats = getFinancialStat();
 
   useEffect(() => {
+    if (!dailyStats || dailyStats.length === 0) {
+      setDate(["No Data"]);
+      setIncome([0]);
+      setExpense([0]);
+      return;
+    }
+
     let dateData: string[] = [];
     let incomeData: number[] = [];
     let expenseData: number[] = [];
 
-    dailyStats?.forEach((stat) => {
+    dailyStats.forEach((stat) => {
       dateData = [...dateData, formatDate(stat.date)];
-      incomeData = [...incomeData, stat.income];
-      expenseData = [...expenseData, stat.expense];
+      incomeData = [...incomeData, stat.income || 0];
+      expenseData = [...expenseData, stat.expense || 0];
     });
 
     setDate(dateData);
@@ -85,7 +92,7 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
       datasets: [
         {
           label: "総合",
-          data: [-30000, 29999, 29999, 29999], // TODO: fetch total data
+          data: income.map((val, index) => val - expense[index]),
           borderColor: "#2D6B47",
           backgroundColor: "#2D6B47",
           fill: false,
@@ -120,7 +127,7 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
         y: {
           stacked: true,
           ticks: {
-            max: 500000, // TODO: resolve error
+            max: 500000,
             min: -200000,
             stepSize: 100000,
             callback: (tickValue: string | number) => `${tickValue}p`,
@@ -136,8 +143,11 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
           align: "end",
           labels: {
             usePointStyle: true,
+            boxWidth: 8,
+            font: {
+              size: 12,
+            },
           },
-          // TODO: resolve error
           onHover: (event: MouseEvent) => {
             const target = event.target as HTMLElement;
             target.style.cursor = "pointer";
@@ -145,8 +155,7 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
         },
         tooltip: {
           callbacks: {
-            label: (tooltipItem: TooltipItem<"line">) =>
-              `${tooltipItem.raw} units`,
+            label: (tooltipItem: TooltipItem<"line">) => `${tooltipItem.raw}p`,
           },
         },
       },
@@ -165,5 +174,13 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
     }
   }, [date, income, expense]);
 
-  return <canvas ref={chartRef}></canvas>;
+  return (
+    <div>
+      {date.length === 1 && date[0] === "No Data" ? (
+        <p>No data available</p>
+      ) : (
+        <canvas ref={chartRef}></canvas>
+      )}
+    </div>
+  );
 };

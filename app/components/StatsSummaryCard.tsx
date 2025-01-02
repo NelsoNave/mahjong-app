@@ -14,6 +14,10 @@ type PerformanceProps = {
   unit?: string;
 };
 
+type StatsSummaryProps = {
+  gameStats: GameStats | null;
+};
+
 // ranking
 const RankStats = ({ rank, count, percentage }: CountProps) => (
   <div className="flex w-full flex-col">
@@ -59,32 +63,37 @@ const Performance = ({ label, performance, unit }: PerformanceProps) => {
   );
 };
 
-type StatsSummaryProps = {
-  gameStats: GameStats;
-};
-
 const StatsSummaryCard = ({ gameStats }: StatsSummaryProps) => {
   const { isFourPlayers, setIsThreePlayers, setIsFourPlayers } =
     useStatsStore();
 
-  const updatedStats = isFourPlayers
-    ? gameStats.fourPlayerGameStats
-    : gameStats.threePlayerGameStats;
+  const getFinancialStat = () => {
+    if (!gameStats) {
+      return null;
+    }
+    return isFourPlayers
+      ? gameStats.fourPlayerGameStats
+      : gameStats.threePlayerGameStats;
+  };
 
-  const performanceData = [
-    {
-      label: "連帯率",
-      value: updatedStats.performanceStats.winRate,
-      unit: "%",
-    },
-    { label: "平均着順", value: updatedStats.performanceStats.averageRank },
-    {
-      label: "総チップ",
-      value: updatedStats.performanceStats.totalChips,
-      unit: "枚",
-    },
-    { label: "総得点", value: updatedStats.performanceStats.totalScore },
-  ];
+  const summaryStats = getFinancialStat();
+
+  const performanceData = summaryStats
+    ? [
+        {
+          label: "連帯率",
+          value: summaryStats.performanceStats.winRate,
+          unit: "%",
+        },
+        { label: "平均着順", value: summaryStats.performanceStats.averageRank },
+        {
+          label: "総チップ",
+          value: summaryStats.performanceStats.totalChips,
+          unit: "枚",
+        },
+        { label: "総得点", value: summaryStats.performanceStats.totalScore },
+      ]
+    : [];
 
   return (
     <div className="flex flex-col gap-2">
@@ -120,14 +129,15 @@ const StatsSummaryCard = ({ gameStats }: StatsSummaryProps) => {
 
       {/* ranking */}
       <div className="flex justify-between gap-5">
-        {Object.entries(updatedStats.rankStats).map(([rank, stats], index) => (
-          <RankStats
-            key={index}
-            rank={Number(rank)}
-            count={stats.count}
-            percentage={stats.percentage}
-          />
-        ))}
+        {summaryStats?.rankStats &&
+          Object.entries(summaryStats.rankStats).map(([rank, stats], index) => (
+            <RankStats
+              key={index}
+              rank={Number(rank)}
+              count={stats.count}
+              percentage={stats.percentage}
+            />
+          ))}
       </div>
 
       {/* performance */}
