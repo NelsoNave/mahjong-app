@@ -1,20 +1,40 @@
 import React from "react";
+import { GameStats } from "@/types/game";
+import { useStatsStore } from "@/store/useStatsStore";
 
-type Props = {};
+type TotalCostCardProps = {
+  gameStats: GameStats;
+};
 
-const TotalCostResultCard = (props: Props) => {
+const TotalCostResultCard = ({ gameStats }: TotalCostCardProps) => {
+  const { isFourPlayers } = useStatsStore();
+
+  const getFinancialStat = () => {
+    return isFourPlayers
+      ? gameStats.fourPlayerGameStats?.financialStats
+      : gameStats.threePlayerGameStats?.financialStats;
+  };
+
+  const dailyStats = getFinancialStat();
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex justify-between">
+      {/* gameFee */}
+      <div className="flex items-center justify-between">
         <p className="text-sm">ゲーム代</p>
-        <p>
-          <span>10000</span>P
+        <p className="flex items-center gap-1">
+          <span className="text-denim">{dailyStats?.gameFee || 0}</span>
+          <span className="text-sm">P</span>
         </p>
       </div>
-      <div className="flex justify-between">
+      {/* totalProfitProfit(include gameFee) */}
+      <div className="flex items-center justify-between">
         <p className="text-sm">ゲーム代込</p>
-        <p>
-          <span>100000</span>P
+        <p className="flex items-center gap-1">
+          <span className="text-denim">
+            {dailyStats?.totalProfitIncludingGameFee || 0}
+          </span>
+          <span className="text-sm">P</span>
         </p>
       </div>
     </div>

@@ -1,27 +1,53 @@
 import React from "react";
+import { GameStats } from "@/types/game";
+import { useStatsStore } from "@/store/useStatsStore";
 
-type Props = {};
+type BalanceCardProps = {
+  gameStats: GameStats;
+};
 
-const BalanceCard = (props: Props) => {
+const BalanceCard = ({ gameStats }: BalanceCardProps) => {
+  const { isFourPlayers } = useStatsStore();
+
+  const getFinancialStat = () => {
+    return isFourPlayers
+      ? gameStats.fourPlayerGameStats?.financialStats
+      : gameStats.threePlayerGameStats?.financialStats;
+  };
+
+  const dailyStats = getFinancialStat();
+
+  const totalIncome = dailyStats?.totalIncome || 0;
+  const totalExpense = dailyStats?.totalExpense || 0;
+  const totalProfit = dailyStats?.totalProfit || 0;
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex justify-between">
+      {/* income */}
+      <div className="flex items-center justify-between">
         <p className="text-sm">収入</p>
-        <p>
-          <span>10000</span>P
+        <p className="flex items-center gap-1">
+          <span className="text-denim">+{totalIncome}</span>
+          <span className="text-sm">P</span>
         </p>
       </div>
-      <div className="flex justify-between">
+
+      {/* expense */}
+      <div className="flex items-center justify-between">
         <p className="text-sm">支出</p>
-        <p>
-          <span>100000</span>P
+        <p className="flex items-center gap-1">
+          <span className="text-appleBlossom">-{totalExpense}</span>
+          <span className="text-sm">P</span>
         </p>
       </div>
       <p className="border-b border-black"></p>
-      <div className="flex justify-between">
+
+      {/* total */}
+      <div className="flex items-center justify-between">
         <p className="text-sm font-semibold">総合</p>
-        <p>
-          <span>10000000</span>P
+        <p className="flex items-center gap-1">
+          <span>{totalProfit}</span>
+          <span className="text-sm">P</span>
         </p>
       </div>
     </div>
