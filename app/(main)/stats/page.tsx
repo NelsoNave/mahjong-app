@@ -18,26 +18,20 @@ const Page = () => {
   const [expenseData, setExpenseData] = useState([30, 45, 60, 50]);
   const [lineData, setLineData] = useState([20, 40, 60, 50]);
   const {
-    selectedMonth,
     isMonthlyView,
     setMonthView,
     setOverallView,
-    isFourPlayers,
-    gameStats,
     targetDate,
     setIsFourPlayers,
     setGameStats,
-    setTargetDate,
   } = useStatsStore();
 
   const handleMonthView = () => {
-    setTargetDate(selectedMonth);
     setMonthView();
     setIsFourPlayers();
   };
 
   const handleOverallView = () => {
-    setTargetDate("");
     setOverallView();
     setIsFourPlayers();
   };
@@ -45,9 +39,7 @@ const Page = () => {
   useEffect(() => {
     const fetchGameStats = async () => {
       try {
-        console.log(targetDate);
-        const result = await getGameStats(targetDate);
-        console.log(result);
+        const result = await getGameStats(isMonthlyView ? targetDate : "");
 
         if (result.status === "success") {
           alert("データの取得に成功しました");
@@ -63,7 +55,7 @@ const Page = () => {
     };
 
     fetchGameStats();
-  }, [isMonthlyView]); // 月指定時と、総合表示の切り替えの時に処理実行する
+  }, [targetDate, setGameStats, isMonthlyView]);
 
   return (
     <div className="h-full">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useStatsStore } from "@/store/useStatsStore";
 
 type Date = string;
 interface GroupedItems {
@@ -9,6 +10,8 @@ interface GroupedItems {
 }
 
 const MonthScroll = () => {
+  const { targetDate, setTargetDate } = useStatsStore();
+
   const initialItems: Date[] = [
     // Dummy data
     "2024-11-26T15:30:00Z",
@@ -32,10 +35,6 @@ const MonthScroll = () => {
     );
     return sortedItems[0].slice(0, 7);
   };
-
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    getLatestMonth(initialItems),
-  );
 
   const groupItemsByMonth = (items: Date[]): GroupedItems[] => {
     const grouped: { [key: string]: Date[] } = {};
@@ -119,7 +118,7 @@ const MonthScroll = () => {
             key={`${group.month}-${index}`}
             data-month-btn={group.month}
             className={`flex flex-shrink-0 flex-col items-center justify-center px-4 py-2 text-lg font-semibold`}
-            onClick={() => handleMonthClick(group.month)}
+            onClick={() => setTargetDate(group.month)}
           >
             <span className="text-sm text-gray-600">
               {group.month.slice(0, 4)}年
