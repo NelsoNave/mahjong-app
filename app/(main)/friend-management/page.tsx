@@ -73,7 +73,7 @@ const Page = async () => {
       <FriendsProvider>
         <Header context="友達管理" />
         {/* Friend Search */}
-        <div className="flex flex-col gap-2 px-10 py-6">
+        <div className="flex flex-col gap-6 px-10 py-6 h-full">
           <div className="h-32">
             <p className="text-sm font-semibold">友達追加</p>
             <FriendsSearchForm />
@@ -82,22 +82,22 @@ const Page = async () => {
           {hasFriends ? (
             <>
               {waitingFriends.length > 0 && (
-                <>
+                <div>
                   <p>承認待ち</p>
                   <FriendsList friends={waitingFriends} />
-                </>
+                </div>
               )}
               {pendingFriends.length > 0 && (
-                <>
+                <div>
                   <p>申請中</p>
                   <FriendsList friends={pendingFriends} />
-                </>
+                </div>
               )}
               {acceptedFriends.length > 0 && (
-                <>
+                <div>
                   <p>友達</p>
                   <FriendsList friends={acceptedFriends} />
-                </>
+                </div>
               )}
             </>
           ) : (

@@ -219,12 +219,12 @@ export async function deleteFriend(
   }
 
   try {
-    await prisma.friend.delete({
+    await prisma.friend.deleteMany({
       where: {
-        userId_friendId: {
-          userId: currentUser.id,
-          friendId: id,
-        },
+        OR: [
+          { userId: currentUser.id, friendId: id },
+          { userId: id, friendId: currentUser.id },
+        ],
       },
     });
     revalidatePath("/friend-management");
