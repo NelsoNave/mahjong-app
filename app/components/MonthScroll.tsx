@@ -3,77 +3,27 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useStatsStore } from "@/store/useStatsStore";
 
-type Date = string;
-interface GroupedItems {
-  month: string;
-  items: Date[];
-}
-
 const MonthScroll = () => {
-  const { targetDate, setTargetDate } = useStatsStore();
-
-  const initialItems: Date[] = [
-    // Dummy data
-    "2024-11-26T15:30:00Z",
-    "2024-12-27T15:30:00Z",
-    "2024-12-28T15:30:00Z",
-    "2024-10-29T15:30:00Z",
-    "2024-11-12T15:30:00Z",
-    "2024-10-15T15:30:00Z",
-    "2024-09-15T15:30:00Z",
-    "2024-07-15T15:30:00Z",
-    "2024-08-15T15:30:00Z",
-    "2024-05-15T15:30:00Z",
-  ];
+  const { targetDate, setTargetDate, availableDate, setAvailableDate } =
+    useStatsStore();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
   const buttonContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const getLatestMonth = (items: Date[]): string => {
-    const sortedItems = [...items].sort(
-      (a, b) => new Date(b).getTime() - new Date(a).getTime(),
-    );
-    return sortedItems[0].slice(0, 7);
-  };
+  const loadMoreItems = async () => {
+    if (isLoading || !availableDate) return;
 
-  const groupItemsByMonth = (items: Date[]): GroupedItems[] => {
-    const grouped: { [key: string]: Date[] } = {};
-
-    items.forEach((item) => {
-      const month = item.slice(0, 7);
-      if (!grouped[month]) {
-        grouped[month] = [];
-      }
-      grouped[month].push(item);
-    });
-
-    return Object.entries(grouped)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, items]) => ({
-        month,
-        items,
-      }));
-  };
-
-  const [displayedItems, setDisplayedItems] = useState<GroupedItems[]>(
-    groupItemsByMonth(initialItems),
-  );
-
-  const loadMoreItems = () => {
-    if (isLoading) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setDisplayedItems((prev) => {
-        const combinedItems = [...prev, ...groupItemsByMonth(initialItems)];
-        return combinedItems;
-      });
-
-      setIsLoading(false);
-    }, 1000);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setAvailableDate(availableDate);
+    setIsLoading(false);
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!targetDate) return;
     const container = e.currentTarget;
+
     const isNearRight =
       container.scrollLeft + container.clientWidth >=
       container.scrollWidth - 200;
@@ -84,25 +34,34 @@ const MonthScroll = () => {
   };
 
   useEffect(() => {
-    const latestMonth = getLatestMonth(initialItems);
-    setTargetDate(latestMonth);
+    if (buttonContainerRef.current && targetDate && isFirstLoad) {
+      const selectedButton = buttonContainerRef.current.querySelector(
+        `[data-month-btn="${targetDate}"]`,
+      ) as HTMLElement;
 
-    if (buttonContainerRef.current) {
-      const latestMonthButton = buttonContainerRef.current.querySelector(
-        `[data-month-btn="${latestMonth}"]`,
-      );
-
-      if (latestMonthButton) {
+      if (selectedButton) {
         const container = buttonContainerRef.current;
-        const buttonOffset = (latestMonthButton as HTMLElement).offsetLeft;
+        const buttonOffset = selectedButton.offsetLeft;
         const containerWidth = container.clientWidth;
-        const buttonWidth = (latestMonthButton as HTMLElement).offsetWidth;
+        const buttonWidth = selectedButton.offsetWidth;
 
-        const scrollPosition = buttonOffset + buttonWidth - containerWidth;
-        container.scrollLeft = scrollPosition;
+        container.scrollLeft = buttonOffset + buttonWidth - containerWidth;
       }
+
+      setIsFirstLoad(false);
     }
-  }, []);
+  }, [targetDate, availableDate, isFirstLoad]);
+
+  const buttonClass = (group: string) =>
+    group === targetDate ? "bg-matrix font-semibold text-white" : "";
+
+  if (!availableDate || availableDate.length === 0) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full flex-col">
@@ -111,27 +70,24 @@ const MonthScroll = () => {
         className="flex gap-1 overflow-x-auto"
         onScroll={handleScroll}
       >
-        {displayedItems.map((group, index) => (
-          <button
-            key={`${group.month}-${index}`}
-            data-month-btn={group.month}
-            className={`flex flex-shrink-0 flex-col items-center justify-center px-4 py-2 text-lg font-semibold`}
-            onClick={() => setTargetDate(group.month)}
-          >
-            <span className="text-sm font-medium text-gray-600">
-              {group.month.slice(0, 4)}年
-            </span>
-            <span
-              className={`rounded-3xl px-3 py-1 text-sm font-medium ${
-                group.month === targetDate
-                  ? "bg-matrix font-semibold text-white"
-                  : ""
-              }`}
+        {Array.isArray(availableDate) &&
+          availableDate.map((group, index) => (
+            <button
+              key={`${group}-${index}`}
+              data-month-btn={group}
+              className="flex flex-shrink-0 flex-col items-center justify-center px-4 py-2 text-lg font-semibold"
+              onClick={() => setTargetDate(group)}
             >
-              {group.month.slice(5)}月
-            </span>
-          </button>
-        ))}
+              <span className="text-sm font-medium text-gray-600">
+                {group.slice(0, 4)}年
+              </span>
+              <span
+                className={`rounded-3xl px-3 py-1 text-sm font-medium ${buttonClass(group)}`}
+              >
+                {group.slice(5)}月
+              </span>
+            </button>
+          ))}
         {isLoading && (
           <div className="flex min-w-[160px] items-center justify-center">
             <div>Loading...</div>
