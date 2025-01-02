@@ -18,6 +18,7 @@ export default {
         denim: "#1876D2",
         zombie: "#E7D598",
         lightBlue: "#A7C7E7",
+        matrix: "#B56562",
       },
       fontFamily: {
         sans: ["var(--font-montserrat)", "var(--font-notoSansJp)"],

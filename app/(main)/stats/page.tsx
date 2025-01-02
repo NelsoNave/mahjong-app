@@ -47,7 +47,7 @@ const Page = () => {
             setGameStats(result.data);
           }
         } else {
-          alert("データの取得に失敗しました");
+          alert(result.message);
         }
       } catch (err) {
         console.error(err);

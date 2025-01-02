@@ -19,8 +19,8 @@ const RankStats = ({ rank, count, percentage }: CountProps) => (
   <div className="flex w-full flex-col">
     <p className="text-sm">{rank}着</p>
     <div className="flex flex-col items-center">
-      <div className="flex w-1/2 justify-center">
-        <span className="pr-1 font-semibold">{count}</span>
+      <div className="flex w-1/2 items-center justify-center">
+        <span className="pr-1 text-lg font-semibold">{count}</span>
         <span>回</span>
       </div>
       <p
@@ -45,7 +45,7 @@ const Performance = ({ label, performance, unit }: PerformanceProps) => {
     (label === "連帯率" && performance >= 50) ||
     (label === "総チップ" && performance >= 1) ||
     (label === "総得点" && performance >= 1)
-      ? "text-blue-500"
+      ? "text-denim"
       : "";
 
   return (

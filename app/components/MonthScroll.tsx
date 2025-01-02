@@ -110,7 +110,7 @@ const MonthScroll = () => {
     <div className="flex w-full flex-col">
       <div
         ref={buttonContainerRef}
-        className="flex gap-1 overflow-x-auto py-5"
+        className="flex gap-1 overflow-x-auto"
         onScroll={handleScroll}
       >
         {displayedItems.map((group, index) => (
@@ -120,13 +120,13 @@ const MonthScroll = () => {
             className={`flex flex-shrink-0 flex-col items-center justify-center px-4 py-2 text-lg font-semibold`}
             onClick={() => setTargetDate(group.month)}
           >
-            <span className="text-sm text-gray-600">
+            <span className="text-sm font-medium text-gray-600">
               {group.month.slice(0, 4)}年
             </span>
             <span
-              className={`rounded-2xl px-3 py-2 text-sm font-medium ${
-                group.month === selectedMonth
-                  ? "bg-appleBlossom text-white"
+              className={`rounded-3xl px-3 py-1 text-sm font-medium ${
+                group.month === targetDate
+                  ? "bg-matrix font-semibold text-white"
                   : ""
               }`}
             >
@@ -140,7 +140,6 @@ const MonthScroll = () => {
           </div>
         )}
       </div>
-      <div>{selectedMonth.toString()}</div>
     </div>
   );
 };
