@@ -30,7 +30,7 @@ const MonthScroll = () => {
   const buttonContainerRef = useRef<HTMLDivElement | null>(null);
 
   const getLatestMonth = (items: Date[]): string => {
-    const sortedItems = items.sort(
+    const sortedItems = [...items].sort(
       (a, b) => new Date(b).getTime() - new Date(a).getTime(),
     );
     return sortedItems[0].slice(0, 7);
@@ -72,11 +72,6 @@ const MonthScroll = () => {
     }, 1000);
   };
 
-  const handleMonthClick = (month: string) => {
-    setSelectedMonth(month);
-    console.log(month);
-  };
-
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
     const isNearRight =
@@ -89,12 +84,15 @@ const MonthScroll = () => {
   };
 
   useEffect(() => {
-    if (displayedItems.length > 0) {
-      if (buttonContainerRef.current) {
-        const latestMonthButton = buttonContainerRef.current.querySelector(
-          `[data-month-btn="${selectedMonth}"]`,
-        );
+    const latestMonth = getLatestMonth(initialItems);
+    setTargetDate(latestMonth);
 
+    if (buttonContainerRef.current) {
+      const latestMonthButton = buttonContainerRef.current.querySelector(
+        `[data-month-btn="${latestMonth}"]`,
+      );
+
+      if (latestMonthButton) {
         const container = buttonContainerRef.current;
         const buttonOffset = (latestMonthButton as HTMLElement).offsetLeft;
         const containerWidth = container.clientWidth;
