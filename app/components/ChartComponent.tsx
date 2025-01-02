@@ -44,22 +44,19 @@ const formatDate = (date: Date) => {
 
 export const ChartComponent = ({ gameStats }: ChartProps) => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
-  const { isFourPlayers } = useStatsStore();
+  const { isFourPlayers, isMonthlyView, targetDate } = useStatsStore();
   const [date, setDate] = useState<string[]>([]);
   const [income, setIncome] = useState<number[]>([]);
   const [expense, setExpense] = useState<number[]>([]);
 
   const getFinancialStat = () => {
-    if (!gameStats) {
-      return [];
-    }
+    if (!gameStats) return [];
     return isFourPlayers
       ? gameStats.fourPlayerGameStats?.dailyStats || []
       : gameStats.threePlayerGameStats?.dailyStats || [];
   };
 
   const dailyStats = getFinancialStat();
-
   useEffect(() => {
     if (!dailyStats || dailyStats.length === 0) {
       setDate(["No Data"]);
@@ -81,7 +78,7 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
     setDate(dateData);
     setIncome(incomeData);
     setExpense(expenseData);
-  }, [gameStats, isFourPlayers]);
+  }, [isMonthlyView, targetDate, isFourPlayers]);
 
   useEffect(() => {
     if (date.length === 0 || income.length === 0 || expense.length === 0)
@@ -177,7 +174,7 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
   return (
     <div>
       {date.length === 1 && date[0] === "No Data" ? (
-        <p>No data available</p>
+        <p>データが存在しません</p>
       ) : (
         <canvas ref={chartRef}></canvas>
       )}

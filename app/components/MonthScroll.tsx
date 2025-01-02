@@ -50,7 +50,7 @@ const MonthScroll = () => {
 
       setIsFirstLoad(false);
     }
-  }, [targetDate, availableDate, isFirstLoad]);
+  }, [targetDate, isFirstLoad]);
 
   const buttonClass = (group: string) =>
     group === targetDate ? "bg-matrix font-semibold text-white" : "";
