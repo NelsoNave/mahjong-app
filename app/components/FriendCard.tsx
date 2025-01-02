@@ -16,14 +16,14 @@ type Props = {
   status?: string;
   image: string;
   isSelfRequester?: boolean;
+  isFriendRequester?: boolean;
 };
 
-const FriendCard = ({ id, friendName, status, image, isSelfRequester }: Props) => {
+const FriendCard = ({ id, friendName, status, image, isSelfRequester, isFriendRequester }: Props) => {
   const commonStyles =
     "mt-2 flex items-center justify-between gap-4 rounded-md bg-neutral-50 px-4 py-2 shadow-[0_0_2px_0_rgba(53,40,1,0.3)]";
 
   const {setFriendData, setFriendId} = useFriends()
-
 
   const handleAddFriend = async (id: number) => {
     try {
@@ -47,17 +47,21 @@ const FriendCard = ({ id, friendName, status, image, isSelfRequester }: Props) =
     setFriendId("");
   };
 
-  const handleApprove = async () => {
+  const handleApprove = async (id: number) => {
     try {
       const result = await approveRequest(id);
-      alert(result.message);
+      if (result.status === "success") {
+        alert(result.message);
+      } else {
+        alert(result.message);
+      }
     } catch (error) {
       console.error("承認に失敗しました:", error);
       alert("承認に失敗しました");
     }
   };
 
-  const handleReject = async () => {
+  const handleReject = async (id: number) => {
     try {
       const result = await denyRequest(id);
       alert(result.message);
@@ -67,7 +71,7 @@ const FriendCard = ({ id, friendName, status, image, isSelfRequester }: Props) =
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: number) => {
     try {
       const result = await deleteFriend(id);
       alert(result.message);
@@ -95,6 +99,7 @@ const FriendCard = ({ id, friendName, status, image, isSelfRequester }: Props) =
         <FriendButtons
           id={id}
           status={status}
+          isFriendRequester={isFriendRequester}
           isSelfRequester={isSelfRequester}
           onRequest={handleAddFriend}
           onCancel={handleCancel}

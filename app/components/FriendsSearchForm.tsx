@@ -62,10 +62,10 @@ const FriendsSearchForm = () => {
         </div>
       </form>
       {friendData && (
-        <FriendCard id={Number(friendId)} friendName={friendData.friendName} status={friendData.status} image={friendData.image} isSelfRequester={friendData.isSelfRequester} />
+        <FriendCard id={Number(friendId)} friendName={friendData.friendName} status={friendData.status} image={friendData.image} isFriendRequester={friendData.isFriendRequester} isSelfRequester={friendData.isSelfRequester} />
       )}
     </>
   );
-};
+}; 
 
 export default FriendsSearchForm;

@@ -22,19 +22,51 @@ const Page = async () => {
   const hasFriends = friends && friends.length > 0;
 
   // 承知待ち
-  const waitingFriends = friends.filter(
-    (friend) => friend.status === "PENDING" && friend.id === currentUserId,
-  );
+  const waitingFriends = friends
+    .filter(
+      (friend) => friend.status === "PENDING" && friend.id === currentUserId,
+    )
+    .map((friend) => {
+      return {
+        id: Number(friend.user?.id),
+        friendName: friend.user?.userName || "Unknown",
+        status: friend.status,
+        image: friend.user?.image || "",
+        isFriendRequester: friend.isFriendRequester,
+        isSelfRequester: friend.isSelfRequester,
+      };
+    });
 
   // 申請中
-  const pendingFriends = friends.filter(
-    (friend) => friend.status === "PENDING" && friend.id !== currentUserId,
-  );
+  const pendingFriends = friends
+    .filter(
+      (friend) => friend.status === "PENDING" && friend.id !== currentUserId,
+    )
+    .map((friend) => {
+      return {
+        id: Number(friend.id),
+        friendName: friend.friendName || "Unknown",
+        status: friend.status,
+        image: friend.image || "",
+        isFriendRequester: friend.isFriendRequester,
+        isSelfRequester: friend.isSelfRequester,
+      };
+    });
 
   // 友達
-  const acceptedFriends = friends.filter(
-    (friend) => friend.status === "ACCEPTED",
-  );
+  const acceptedFriends = friends
+    .filter((friend) => friend.status === "ACCEPTED")
+    .map((friend) => {
+      const isCurrentUser = friend.id === currentUserId;
+      return {
+        id: Number(isCurrentUser ? friend.user?.id : friend.id),
+      friendName: isCurrentUser ? friend.user?.userName || "Unknown" : friend.friendName || "Unknown",
+      status: friend.status,
+      image: isCurrentUser ? friend.user?.image || "" : friend.image || "",
+      isFriendRequester: friend.isFriendRequester,
+      isSelfRequester: friend.isSelfRequester,
+      };
+    });
 
   return (
     <>

@@ -33,10 +33,15 @@ export async function getAllFriendData(): Promise<ActionState<FriendData>> {
           image: true,
         },
       },
+      user: {
+        select: {
+          id: true,
+          userName: true,
+          image: true,
+        },
+      },
     },
   });
-
-
 
   const friends: FriendData[] = friendsData.map((friend) => ({
     id: friend.friend?.id,
@@ -44,6 +49,14 @@ export async function getAllFriendData(): Promise<ActionState<FriendData>> {
     image: friend.friend?.image || "",
     status: friend.status || undefined,
     isSelfRequester: friend.userId === user.id,
+    isFriendRequester: friend.friendId === user.id,
+    user: friend.user
+      ? {
+          id: String(friend.user.id),
+          userName: friend.user.userName,
+          image: friend.user.image,
+        }
+      : undefined,
   }));
 
   return {
@@ -215,7 +228,6 @@ export async function deleteFriend(
       },
     });
     revalidatePath("/friend-management");
-    revalidatePath("/test");
     return { status: "success", message: "削除しました" };
   } catch (error) {
     console.error("Failed to delete a friend", error);
@@ -246,8 +258,8 @@ export async function approveRequest(
     await prisma.friend.update({
       where: {
         userId_friendId: {
-          userId: currentUser.id,
-          friendId: id,
+          userId: id,
+          friendId: currentUser.id,
         },
       },
       data: {
@@ -256,7 +268,6 @@ export async function approveRequest(
     });
 
     revalidatePath("/friend-management");
-    revalidatePath("/test");
     return { status: "success", message: "承認しました" };
   } catch (error) {
     console.error("Failed to approve friend request", error);
@@ -287,8 +298,8 @@ export async function denyRequest(
     await prisma.friend.update({
       where: {
         userId_friendId: {
-          userId: currentUser.id,
-          friendId: id,
+          userId: id,
+          friendId: currentUser.id,
         },
       },
       data: {
@@ -297,7 +308,6 @@ export async function denyRequest(
     });
 
     revalidatePath("/friend-management");
-    revalidatePath("/test");
     return { status: "success", message: "拒否しました" };
   } catch (error) {
     console.error("Failed to approve friend request", error);

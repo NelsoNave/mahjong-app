@@ -15,6 +15,8 @@ const FriendsList = ({ friends }: Props) => {
           friendName={friend.friendName}
           image={friend.image}
           status={friend.status}
+          isFriendRequester={friend?.isFriendRequester}
+          isSelfRequester={friend?.isSelfRequester}
         />
       ))}
     </div>
