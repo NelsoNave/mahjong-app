@@ -19,7 +19,9 @@ const FinancialStatItem = ({
     <p className="text-sm">{label}</p>
     <p className="flex items-center gap-1">
       <span className={isNegative ? "text-appleBlossom" : "text-denim"}>
-        {isNegative ? `-${value}` : `+${value}`}
+        {isNegative
+          ? `-${value.toLocaleString()}`
+          : `+${value.toLocaleString()}`}
       </span>
       <span className="text-sm">P</span>
     </p>
