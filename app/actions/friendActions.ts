@@ -130,7 +130,7 @@ export async function searchFriendData(
     console.error("Failed to search friend:", error);
     return {
       status: "error",
-      message: "ユーザーが見つかりません",
+      message: "友達データが存在しません",
     };
   }
 }
@@ -189,7 +189,7 @@ export async function friendRequest(
 
     revalidatePath("/friend-management");
 
-    return { status: "success", message: "申請しました", data: updateFriend };
+    return { status: "success", message: "友達申請を送りました", data: updateFriend };
   } catch (error) {
     console.error("Failed to send friend request", error);
     return {
@@ -228,10 +228,10 @@ export async function deleteFriend(
       },
     });
     revalidatePath("/friend-management");
-    return { status: "success", message: "削除しました" };
+    return { status: "success", message: "友達データを削除しました" };
   } catch (error) {
     console.error("Failed to delete a friend", error);
-    return { status: "error", message: "削除に失敗しました" };
+    return { status: "error", message: "友達データの削除に失敗しました" };
   }
 }
 
@@ -268,10 +268,10 @@ export async function approveRequest(
     });
 
     revalidatePath("/friend-management");
-    return { status: "success", message: "承認しました" };
+    return { status: "success", message: "友達申請を承認しました" };
   } catch (error) {
     console.error("Failed to approve friend request", error);
-    return { status: "error", message: "承認に失敗しました" };
+    return { status: "error", message: "友達申請の承認に失敗しました" };
   }
 }
 
@@ -308,9 +308,9 @@ export async function denyRequest(
     });
 
     revalidatePath("/friend-management");
-    return { status: "success", message: "拒否しました" };
+    return { status: "success", message: "友達申請を拒否しました" };
   } catch (error) {
     console.error("Failed to approve friend request", error);
-    return { status: "error", message: "拒否に失敗しました" };
+    return { status: "error", message: "友達申請の拒否に失敗しました" };
   }
 }
