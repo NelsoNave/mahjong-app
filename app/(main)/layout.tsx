@@ -7,10 +7,10 @@ type Props = {
 
 const Layout = ({ children }: Props) => {
   return (
-    <>
+    <div className="flex min-h-screen flex-col justify-between">
       {children}
       <Navigation />
-    </>
+    </div>
   );
 };
 

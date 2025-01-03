@@ -29,6 +29,9 @@ export default {
       boxShadow: {
         bottom: "0px 2px 4px rgba(0, 0, 0, 0.1)",
       },
+      screens: {
+        "max-sm": { max: "424px" },
+      },
     },
   },
   plugins: [],

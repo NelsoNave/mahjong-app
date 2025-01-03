@@ -55,10 +55,12 @@ const Performance = ({ label, performance, unit }: PerformanceProps) => {
       : "";
 
   return (
-    <div className="flex justify-between rounded-md border-0.5 border-gray-400 p-2">
-      <p>{label}</p>
-      <div className="flex gap-1 font-semibold">
-        <p className={performanceColor}>{displayPerformance}</p>
+    <div className="flex items-center justify-between rounded-md border-0.5 border-gray-400 p-2">
+      <p className="text-sm">{label}</p>
+      <div className="flex items-center gap-1 font-semibold">
+        <p className={`${performanceColor} text-lg max-sm:text-sm`}>
+          {displayPerformance}
+        </p>
         <p>{unit}</p>
       </div>
     </div>
@@ -98,7 +100,7 @@ const StatsSummaryCard = ({ gameStats }: StatsSummaryProps) => {
     : [];
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {/* switch game types */}
       <div className="flex gap-2">
         <button

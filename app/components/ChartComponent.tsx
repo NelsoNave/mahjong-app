@@ -15,6 +15,7 @@ import {
   Legend,
   ChartOptions,
   TooltipItem,
+  ChartEvent,
 } from "chart.js";
 import { useStatsStore } from "@/store/useStatsStore";
 import { GameStats } from "@/types/game";
@@ -124,8 +125,6 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
         y: {
           stacked: true,
           ticks: {
-            max: 500000,
-            min: -200000,
             stepSize: 100000,
             callback: (tickValue: string | number) => `${tickValue}p`,
           },
@@ -141,13 +140,16 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
           labels: {
             usePointStyle: true,
             boxWidth: 8,
+            boxHeight: 8,
             font: {
               size: 12,
             },
           },
-          onHover: (event: MouseEvent) => {
-            const target = event.target as HTMLElement;
-            target.style.cursor = "pointer";
+          onHover: (event: ChartEvent) => {
+            const target = (event.native as MouseEvent).target as HTMLElement;
+            if (target instanceof HTMLElement) {
+              target.style.cursor = "pointer";
+            }
           },
         },
         tooltip: {
