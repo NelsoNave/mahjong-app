@@ -7,6 +7,7 @@ interface StatsStore {
   gameStats: GameStats | null;
   targetDate: string;
   availableDate: string[];
+  isStatsLoading: boolean;
   setMonthView: () => void;
   setOverallView: () => void;
   setIsFourPlayers: () => void;
@@ -14,6 +15,7 @@ interface StatsStore {
   setGameStats: (gameStats: GameStats) => void;
   setTargetDate: (targetDate: string) => void;
   setAvailableDate: (newDates: string[]) => void;
+  setIsStatsLoading: (loadState: boolean) => void;
 }
 
 export const useStatsStore = create<StatsStore>()((set) => ({
@@ -22,6 +24,7 @@ export const useStatsStore = create<StatsStore>()((set) => ({
   gameStats: null,
   targetDate: "",
   availableDate: [],
+  isStatsLoading: false,
   setMonthView: () => set({ isMonthlyView: true }),
   setOverallView: () => set({ isMonthlyView: false }),
   setIsFourPlayers: () => set({ isFourPlayers: true }),
@@ -35,4 +38,6 @@ export const useStatsStore = create<StatsStore>()((set) => ({
       ...state,
       availableDate: [...state.availableDate, ...newDates],
     })),
+  setIsStatsLoading: (loadState: boolean) =>
+    set(() => ({ isStatsLoading: loadState })),
 }));
