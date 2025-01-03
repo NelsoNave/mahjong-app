@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Box from "@/components/Box";
 import StatsSummary from "@/components/StatsSummaryCard";
 import BalanceCard from "@/components/BalanceCard";
@@ -72,18 +72,18 @@ const Page = () => {
     },
   };
 
+  const [isStatsLoading, setIsStatsLoading] = useState(false);
+
   const {
     gameStats,
     isMonthlyView,
     setMonthView,
     setOverallView,
     targetDate,
-    isStatsLoading,
     setIsFourPlayers,
     setGameStats,
     setTargetDate,
     setAvailableDate,
-    setIsStatsLoading,
   } = useStatsStore();
 
   const handleMonthView = () => {
@@ -104,7 +104,7 @@ const Page = () => {
       const statsData = await getGameStats(isMonthlyView ? targetDate : "");
       if (statsData.status === "success" && statsData.data) {
         setGameStats(statsData.data);
-      } else {
+      } else if (statsData.status === "error") {
         alert(statsData.message);
       }
     } catch (err) {
@@ -170,6 +170,7 @@ const Page = () => {
             </div>
             {isMonthlyView && <MonthScroll />}
             <div className="flex flex-col gap-2">
+              {/* display dummy data for now */}
               <Box>
                 <ChartComponent gameStats={mockGameStats} />
               </Box>
