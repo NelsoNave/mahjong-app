@@ -4,16 +4,16 @@ import React, { useState, useRef } from "react";
 import { useStatsStore } from "@/store/useStatsStore";
 
 const MonthScroll = () => {
-  const { targetDate, setTargetDate, availableDate, setAvailableDate } =
+  const { targetDate, setTargetDate, availableDate, setDisplayDate } =
     useStatsStore();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const buttonContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const loadMoreItems = async () => {
-    if (isLoading || !availableDate) return;
-    setAvailableDate(availableDate);
-    setIsLoading(false);
+  const loadMoreItems = () => {
+    if (!availableDate || availableDate.length === 0 || isLoading) return;
+
+    setDisplayDate();
   };
 
   const handleButtonClick = (date: string) => {
@@ -29,7 +29,9 @@ const MonthScroll = () => {
       container.scrollWidth - 200;
 
     if (isNearRight && !isLoading) {
+      setIsLoading(true);
       loadMoreItems();
+      setIsLoading(false);
     }
   };
 

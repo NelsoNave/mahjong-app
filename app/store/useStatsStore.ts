@@ -14,6 +14,7 @@ interface StatsStore {
   setGameStats: (gameStats: GameStats) => void;
   setTargetDate: (targetDate: string) => void;
   setAvailableDate: (newDates: string[]) => void;
+  setDisplayDate: () => void;
 }
 
 export const useStatsStore = create<StatsStore>()((set) => ({
@@ -35,4 +36,17 @@ export const useStatsStore = create<StatsStore>()((set) => ({
       ...state,
       availableDate: [...state.availableDate, ...newDates],
     })),
+  setDisplayDate: () =>
+    set((state) => {
+      if (!state.availableDate || state.availableDate.length === 0) {
+        return state;
+      }
+
+      const updatedAvailableDate = [
+        ...state.availableDate.slice(1),
+        state.availableDate[0],
+      ];
+
+      return { availableDate: updatedAvailableDate };
+    }),
 }));
