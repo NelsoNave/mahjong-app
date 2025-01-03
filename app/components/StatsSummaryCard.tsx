@@ -47,18 +47,27 @@ const Performance = ({ label, performance, unit }: PerformanceProps) => {
     (label === "総得点" || label === "総チップ") && performance >= 1
       ? `+${performance}`
       : performance;
+
   const performanceColor =
     (label === "連帯率" && performance >= 50) ||
-    (label === "総チップ" && performance >= 1) ||
     (label === "総得点" && performance >= 1)
       ? "text-denim"
       : "";
+
+  const totalChipColor =
+    label === "総チップ" && performance >= 1
+      ? "text-denim"
+      : label === "総チップ" && performance < 0
+        ? "text-appleBlossom"
+        : "";
 
   return (
     <div className="flex items-center justify-between rounded-md border-0.5 border-gray-400 p-2">
       <p className="text-sm">{label}</p>
       <div className="flex items-center gap-1 font-semibold">
-        <p className={`${performanceColor} text-lg max-sm:text-sm`}>
+        <p
+          className={`${performanceColor} ${totalChipColor} text-lg max-sm:text-sm`}
+        >
           {displayPerformance}
         </p>
         <p>{unit}</p>

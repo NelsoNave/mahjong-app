@@ -52,7 +52,7 @@ const Page = () => {
       performanceStats: {
         winRate: 55,
         averageRank: 2.25,
-        totalChips: 4000,
+        totalChips: -4000,
         totalScore: 1400,
       },
       financialStats: {
