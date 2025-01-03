@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useStatsStore } from "@/store/useStatsStore";
 
 const MonthScroll = () => {
@@ -8,16 +8,16 @@ const MonthScroll = () => {
     useStatsStore();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
   const buttonContainerRef = useRef<HTMLDivElement | null>(null);
 
   const loadMoreItems = async () => {
     if (isLoading || !availableDate) return;
-
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     setAvailableDate(availableDate);
     setIsLoading(false);
+  };
+
+  const handleButtonClick = (date: string) => {
+    setTargetDate(date);
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -33,27 +33,8 @@ const MonthScroll = () => {
     }
   };
 
-  useEffect(() => {
-    if (buttonContainerRef.current && targetDate && isFirstLoad) {
-      const selectedButton = buttonContainerRef.current.querySelector(
-        `[data-month-btn="${targetDate}"]`,
-      ) as HTMLElement;
-
-      if (selectedButton) {
-        const container = buttonContainerRef.current;
-        const buttonOffset = selectedButton.offsetLeft;
-        const containerWidth = container.clientWidth;
-        const buttonWidth = selectedButton.offsetWidth;
-
-        container.scrollLeft = buttonOffset + buttonWidth - containerWidth;
-      }
-
-      setIsFirstLoad(false);
-    }
-  }, [targetDate, isFirstLoad]);
-
-  const buttonClass = (group: string) =>
-    group === targetDate ? "bg-matrix font-semibold text-white" : "";
+  const buttonClass = (selectedDate: string) =>
+    selectedDate === targetDate ? "bg-matrix font-semibold text-white" : "";
 
   if (!availableDate || availableDate.length === 0) {
     return (
@@ -71,20 +52,20 @@ const MonthScroll = () => {
         onScroll={handleScroll}
       >
         {Array.isArray(availableDate) &&
-          availableDate.map((group, index) => (
+          availableDate.map((date, index) => (
             <button
-              key={`${group}-${index}`}
-              data-month-btn={group}
-              className="flex flex-shrink-0 flex-col items-center justify-center px-4 py-2 text-lg font-semibold"
-              onClick={() => setTargetDate(group)}
+              key={`${date}-${index}`}
+              data-month-btn={date}
+              className="flex flex-shrink-0 flex-col items-center justify-center px-3 py-2 text-lg font-semibold"
+              onClick={() => handleButtonClick(date)}
             >
               <span className="text-sm font-medium text-gray-600">
-                {group.slice(0, 4)}年
+                {date.slice(0, 4)}年
               </span>
               <span
-                className={`rounded-3xl px-3 py-1 text-sm font-medium ${buttonClass(group)}`}
+                className={`rounded-3xl px-3 py-1 text-sm font-medium ${buttonClass(date)}`}
               >
-                {group.slice(5)}月
+                {date.slice(5)}月
               </span>
             </button>
           ))}
