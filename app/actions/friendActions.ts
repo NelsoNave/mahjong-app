@@ -67,8 +67,17 @@ export async function getAllFriendData(): Promise<ActionState<FriendData>> {
 }
 
 export async function searchFriendData(
-  friendId: number,
+  friendId: number | string,
 ): Promise<ActionState<FriendData>> {
+  if (!friendId) {
+    return { status: "error", message: "IDを入力してください" };
+  }
+
+  const friendIdNumber = Number(friendId);
+  if (isNaN(friendIdNumber)) {
+    return { status: "error", message: "数値を入力してください" };
+  }
+
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -91,14 +100,16 @@ export async function searchFriendData(
 
   // Check friends
   try {
-    const existingFriend = await prisma.friend.findUnique({
+    const existingFriend = await prisma.friend.findFirst({
       where: {
-        userId_friendId: {
-          userId: currentUser.id,
-          friendId: friendId,
-        },
+        OR: [
+          { userId: currentUser.id, friendId: friendIdNumber },
+          { userId: friendIdNumber, friendId: currentUser.id },
+        ],
       },
     });
+
+    console.log(existingFriend);
 
     if (existingFriend?.status === FriendStatus.ACCEPTED) {
       return { status: "error", message: "ユーザーが見つかりません" };
@@ -110,12 +121,12 @@ export async function searchFriendData(
 
     // Get friend data
     const friend = await prisma.user.findUnique({
-      where: { id: friendId },
+      where: { id: friendIdNumber },
       select: { id: true, userName: true, image: true },
     });
 
     if (!friend) {
-      return { status: "error", message: "ユーザーが見つかりません" };
+      return { status: "error", message: "友達データが存在しません" };
     }
 
     // Formatting friend data
@@ -130,7 +141,7 @@ export async function searchFriendData(
     console.error("Failed to search friend:", error);
     return {
       status: "error",
-      message: "友達データが存在しません",
+      message: "ユーザーの検索に失敗しました",
     };
   }
 }
@@ -189,7 +200,11 @@ export async function friendRequest(
 
     revalidatePath("/friend-management");
 
-    return { status: "success", message: "友達申請を送りました", data: updateFriend };
+    return {
+      status: "success",
+      message: "友達申請を送りました",
+      data: updateFriend,
+    };
   } catch (error) {
     console.error("Failed to send friend request", error);
     return {

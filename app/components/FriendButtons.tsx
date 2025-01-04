@@ -51,14 +51,14 @@ const FriendButtons = ({
               </button>
             </div>
           )}
-          {isSelfRequester && (
+          {/* {isSelfRequester && (
             <button
               className="rounded bg-appleBlossom px-4 py-1 text-sm text-white hover:opacity-90"
               onClick={() => onRejected(id)}
             >
-              キャンセル
+              取消
             </button>
-          )}
+          )} */}
         </>
       );
 
@@ -94,7 +94,7 @@ const FriendButtons = ({
             className="rounded bg-appleBlossom px-4 py-1 text-sm text-white hover:opacity-90"
             onClick={onCancel}
           >
-            キャンセル
+            取消
           </button>
           <button
             className="rounded bg-amazon px-4 py-1 text-sm text-white opacity-70 hover:opacity-60"
