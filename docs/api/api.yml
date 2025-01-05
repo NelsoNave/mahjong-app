@@ -704,157 +704,59 @@ paths:
                                 expense:
                                   type: integer
                                   description: "その日の支出"
-                      THREE:
+                  fourPlayerGameStats:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: "4人麻雀の回数"
+                      percentage:
+                        type: number
+                        format: float
+                        description: "4人麻雀の割合"
+                      rankStats:
                         type: object
                         properties:
-                          count:
-                            type: integer
-                            description: "3人麻雀の回数"
-                          percentage:
-                            type: number
-                            format: float
-                            description: "3人麻雀の割合"
-                          rankStats:
+                          "1":
                             type: object
                             properties:
-                              "1":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "1着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "1着率"
-                              "2":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "2着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "2着率"
-                              "3":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "3着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "3着率"
-                          performance:
-                            type: object
-                            properties:
-                              winRate:
+                              count:
+                                type: integer
+                                description: "1着回数"
+                              percentage:
                                 type: number
                                 format: float
-                                description: "連対率"
-                              averageRank:
+                                description: "1着率"
+                          "2":
+                            type: object
+                            properties:
+                              count:
+                                type: integer
+                                description: "2着回数"
+                              percentage:
                                 type: number
                                 format: float
-                                description: "平均着順"
-                              totalChips:
-                                type: integer
-                                description: "総チップ数"
-                              totalPoints:
-                                type: integer
-                                description: "総得点"
-                          financialSummary:
+                                description: "2着率"
+                          "3":
                             type: object
                             properties:
-                              income:
+                              count:
                                 type: integer
-                                description: "収入"
-                              expense:
-                                type: integer
-                                description: "支出"
-                              total:
-                                type: integer
-                                description: "収支"
-                              breakdown:
-                                type: object
-                                properties:
-                                  gameFee:
-                                    type: object
-                                    properties:
-                                      income:
-                                        type: integer
-                                        description: "ゲーム代収入"
-                                      expense:
-                                        type: integer
-                                        description: "ゲーム代支出"
-                          dailyStats:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                date:
-                                  type: string
-                                  format: date
-                                income:
-                                  type: integer
-                                  description: "その日の収入"
-                                expense:
-                                  type: integer
-                                  description: "その日の支出"
-                      FREE:
-                        type: object
-                        properties:
-                          count:
-                            type: integer
-                            description: "フリー麻雀の回数"
-                          percentage:
-                            type: number
-                            format: float
-                            description: "フリー麻雀の割合"
-                          rankStats:
+                                description: "3着回数"
+                              percentage:
+                                type: number
+                                format: float
+                                description: "3着率"
+                          "4":
                             type: object
                             properties:
-                              "1":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "1着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "1着率"
-                              "2":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "2着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "2着率"
-                              "3":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "3着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "3着率"
-                              "4":
-                                type: object
-                                properties:
-                                  count:
-                                    type: integer
-                                    description: "4着回数"
-                                  percentage:
-                                    type: number
-                                    format: float
-                                    description: "4着率"
+                              count:
+                                type: integer
+                                description: "4着回数"
+                              percentage:
+                                type: number
+                                format: float
+                                description: "4着率"
                           performance:
                             type: object
                             properties:
