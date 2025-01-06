@@ -16,6 +16,7 @@ import {
   ChartOptions,
   TooltipItem,
   ChartEvent,
+  Filler,
 } from "chart.js";
 import { useStatsStore } from "@/store/useStatsStore";
 import { GameStats } from "@/types/game";
@@ -31,6 +32,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
+  Filler,
 );
 
 interface ChartProps {
@@ -97,6 +99,8 @@ export const ChartComponent = ({ gameStats }: ChartProps) => {
           type: "line" as const,
           tension: 0.3,
           zIndex: 2,
+          borderWidth: 1.5,
+          pointRadius: 0,
         },
         {
           label: "収入",
