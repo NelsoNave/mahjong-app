@@ -44,9 +44,7 @@ const RankStats = ({ rank, count, percentage }: CountProps) => (
 
 const Performance = ({ label, performance, unit }: PerformanceProps) => {
   const displayPerformance =
-    (label === "総得点" || label === "総チップ") && performance >= 1
-      ? `+${performance}`
-      : performance;
+    label === "総得点" && performance >= 1 ? `+${performance}` : performance;
 
   const performanceColor =
     (label === "連帯率" && performance >= 50) ||
