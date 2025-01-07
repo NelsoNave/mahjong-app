@@ -1,42 +1,37 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useStatsStore } from "@/store/useStatsStore";
 
 const MonthScroll = () => {
-  const { targetDate, setTargetDate, availableDate, setDisplayDate } =
-    useStatsStore();
+  const { targetDate, setTargetDate, availableDate } = useStatsStore();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const buttonContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const loadMoreItems = () => {
-    if (!availableDate || availableDate.length === 0 || isLoading) return;
-
-    setDisplayDate();
-  };
+  const selectedButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleButtonClick = (date: string) => {
     setTargetDate(date);
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (!targetDate) return;
-    const container = e.currentTarget;
-
-    const isNearRight =
-      container.scrollLeft + container.clientWidth >=
-      container.scrollWidth - 200;
-
-    if (isNearRight && !isLoading) {
-      setIsLoading(true);
-      loadMoreItems();
-      setIsLoading(false);
-    }
-  };
-
   const buttonClass = (selectedDate: string) =>
     selectedDate === targetDate ? "bg-matrix font-semibold text-white" : "";
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    if (targetDate && availableDate?.length > 0) {
+      const selectedIndex = availableDate.findIndex(
+        (date) => date === targetDate,
+      );
+      if (selectedIndex !== -1 && selectedButtonRefs.current[selectedIndex]) {
+        selectedButtonRefs.current[selectedIndex]?.scrollIntoView({
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+    setIsLoading(false);
+  }, [targetDate, availableDate]);
 
   if (!availableDate || availableDate.length === 0) {
     return (
@@ -48,17 +43,16 @@ const MonthScroll = () => {
 
   return (
     <div className="flex w-full flex-col">
-      <div
-        ref={buttonContainerRef}
-        className="flex gap-1 overflow-x-auto"
-        onScroll={handleScroll}
-      >
+      <div className="flex gap-1 overflow-x-auto">
         {Array.isArray(availableDate) &&
           availableDate.map((date, index) => (
             <button
               key={`${date}-${index}`}
+              ref={(el: HTMLButtonElement | null) => {
+                selectedButtonRefs.current[index] = el;
+              }}
               data-month-btn={date}
-              className="flex flex-shrink-0 flex-col items-center justify-center px-3 py-2 text-lg font-semibold"
+              className={`flex flex-shrink-0 flex-col items-center justify-center px-3 py-2 text-lg font-semibold`}
               onClick={() => handleButtonClick(date)}
             >
               <span className="text-sm font-medium text-gray-600">
