@@ -64,6 +64,8 @@ const mockData = {
 console.log(mockData);
 
 const RecordForm = () => {
+  const [scoreColor, setScoreColor] = useState<{[key: string]: string}>({})
+
   const [formData, setFormData] = useState<FormData>({
     playedAt: new Date().toISOString().split("T")[0],
     rate: 0,
@@ -142,6 +144,19 @@ const RecordForm = () => {
       ...prev,
       rounds: prev.rounds.filter((round) => round.id !== roundId),
     }));
+  };
+
+  const handleScoreChange = (
+    roundId: number,
+    userId: number,
+    value: number,
+  ) => {
+    saveRoundScore(roundId, userId, "scoreChange", value);
+
+    setScoreColor(prev => ({
+      ...prev,
+      [`${roundId}-${userId}`]: value > 0 ? "text-appleBlossom" : value < 0 ? "text-denim" : "text-black"
+    }))
   };
 
   return (
@@ -272,12 +287,11 @@ const RecordForm = () => {
                 >
                   <input
                     type="number"
-                    className="h-14 w-14 border-transparent p-1 text-center focus:outline-none"
+                    className={`h-14 w-14 border-transparent p-1 text-center focus:outline-none ${scoreColor[`${round.id}-${score.userId}`] || "text-black"}`}
                     onChange={(e) =>
-                      saveRoundScore(
+                      handleScoreChange(
                         round.id,
                         score.userId,
-                        "scoreChange",
                         Number(e.target.value),
                       )
                     }
@@ -303,7 +317,7 @@ const RecordForm = () => {
               <button
                 type="button"
                 onClick={addRound}
-                className="w-full bg-pineGlade py-2 "
+                className="w-full bg-pineGlade py-2"
               >
                 追加する
               </button>
