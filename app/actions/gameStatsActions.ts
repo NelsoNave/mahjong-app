@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { GameStats } from "@/types/game";
 import { NumberOfPlayers } from "@prisma/client";
 interface DailyStats {
@@ -11,40 +12,146 @@ interface DailyStats {
   expense: number;
 }
 
-const getDailyStats = async (
-  userId: number,
-  yearMonth: string,
-  numberOfPlayers: NumberOfPlayers,
-): Promise<DailyStats[]> => {
-  const [year, month] = yearMonth.split("-").map(Number);
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0); // 月末日
+interface RankStats {
+  rank: number;
+  count: number;
+  percentage: number;
+}
 
-  const results = await prisma.$queryRaw<DailyStats[]>`
-    SELECT
-      g.id,
-      DATE(g."playedAt") AS date,
-      SUM(rr."scoreChange" * g.rate )::integer AS daily_total_income,
-      SUM(rr."scoreChange")::integer AS daily_score,
-      SUM(CASE WHEN rr."scoreChange" > 0 THEN rr."scoreChange" * g.rate ELSE 0 END)::integer AS daily_income,
-      SUM(CASE WHEN rr."scoreChange" < 0 THEN rr."scoreChange" * g.rate ELSE 0 END)::integer AS daily_expence,
-      SUM(CASE WHEN rr."rank" = 1 THEN 1 ELSE 0 END)::integer AS rank_1_cnt,
-      SUM(CASE WHEN rr."rank" = 2 THEN 1 ELSE 0 END)::integer AS rank_2_cnt,
-      SUM(CASE WHEN rr."rank" = 3 THEN 1 ELSE 0 END)::integer AS rank_3_cnt,
-      SUM(CASE WHEN rr."rank" = 4 THEN 1 ELSE 0 END)::integer AS rank_4_cnt
-    FROM games g
-    JOIN rounds r ON g.id = r."gameId"
-    JOIN round_results rr ON r.id = rr."roundId" AND rr."userId" = ${userId}
-    WHERE 
-      g."playedAt" >= ${startDate}
-      AND g."playedAt" <= ${endDate}
-      AND g."numberOfPlayers"::text = ${numberOfPlayers}::text
-    GROUP BY g.id, DATE(g."playedAt")
-    ORDER BY DATE(g."playedAt")
+interface FinancialStats {
+  total_income: number;
+  total_expense: number;
+  total_profit: number;
+  total_game_fee: number;
+  total_profit_with_fee: number;
+}
+
+const basicStatsQuery = (
+  userId: number,
+  yearMonth: string | undefined,
+  numberOfPlayers: NumberOfPlayers,
+): string => {
+  let dateCondition = "";
+
+  if (yearMonth) {
+    const [year, month] = yearMonth.split("-").map(Number);
+    const startDate = new Date(year, month - 1, 1).toISOString();
+    const endDate = new Date(year, month, 0).toISOString();
+    dateCondition = `
+      AND g."playedAt" >= '${startDate}'
+      AND g."playedAt" <= '${endDate}'
+    `;
+  }
+
+  return `
+    WITH base_stats AS (
+      SELECT
+        g.id as game_id,
+        DATE(g."playedAt") as played_date,
+        rr."rank",
+        rr."scoreChange",
+        g.rate,
+        g.fee,
+        ROW_NUMBER() OVER (PARTITION BY g.id) as row_num
+      FROM games g
+      JOIN rounds r ON g.id = r."gameId"
+      JOIN round_results rr ON r.id = rr."roundId"
+      WHERE 
+        rr."userId" = ${userId}
+        ${dateCondition}
+        AND g."numberOfPlayers"::text = '${numberOfPlayers}'::text
+    )
+  `;
+};
+
+export const getRankStats = async (
+  userId: number,
+  yearMonth: string | undefined,
+  numberOfPlayers: NumberOfPlayers,
+): Promise<RankStats[]> => {
+  const query = `
+    ${basicStatsQuery(userId, yearMonth, numberOfPlayers)}
+    , ranks AS (
+      SELECT generate_series(1, 4) as rank
+    )
+    , rank_counts AS (
+      SELECT
+        r.rank,
+        COUNT(bs.rank)::integer as count
+      FROM ranks r
+      LEFT JOIN base_stats bs ON bs.rank = r.rank
+      GROUP BY r.rank
+    )
+    SELECT 
+      rank,
+      count,
+      ROUND(
+        count * 100.0 / NULLIF((SELECT SUM(count) FROM rank_counts), 0),
+        2
+      ) as percentage
+    FROM rank_counts
+    ORDER BY rank
   `;
 
-  // BigIntをnumberに変換
-  return results;
+  const results = await prisma.$queryRaw`${Prisma.raw(query)}`;
+  return results as RankStats[];
+};
+
+export const getFinancialStats = async (
+  userId: number,
+  yearMonth: string | undefined,
+  numberOfPlayers: NumberOfPlayers,
+): Promise<FinancialStats> => {
+  const query = `
+    ${basicStatsQuery(userId, yearMonth, numberOfPlayers)}
+    SELECT
+      COALESCE(SUM(
+        CASE WHEN "scoreChange" * rate > 0 
+        THEN "scoreChange" * rate 
+        ELSE 0 END
+      )::integer, 0) as total_income,
+      COALESCE(ABS(SUM(
+        CASE WHEN "scoreChange" * rate < 0 
+        THEN "scoreChange" * rate 
+        ELSE 0 END
+      ))::integer, 0) as total_expense,
+      COALESCE(SUM("scoreChange" * rate)::integer, 0) as total_profit,
+      COALESCE(SUM(CASE WHEN row_num = 1 THEN fee ELSE 0 END)::integer, 0) as total_game_fee,
+      COALESCE((
+        SUM("scoreChange" * rate) - 
+        SUM(CASE WHEN row_num = 1 THEN fee ELSE 0 END)
+      )::integer, 0) as total_profit_with_fee
+    FROM base_stats
+  `;
+
+  const results = await prisma.$queryRaw`${Prisma.raw(query)}`;
+  return results as FinancialStats;
+};
+
+export const getDailyStats = async (
+  userId: number,
+  yearMonth: string | undefined,
+  numberOfPlayers: NumberOfPlayers,
+): Promise<DailyStats[]> => {
+  const query = `
+    ${basicStatsQuery(userId, yearMonth, numberOfPlayers)}
+    SELECT
+      played_date as date,
+      SUM("scoreChange" * rate)::integer as total_score_change,
+      SUM(CASE WHEN "scoreChange" * rate > 0 THEN "scoreChange" * rate ELSE 0 END)::integer as income,
+      SUM(CASE WHEN "scoreChange" * rate < 0 THEN "scoreChange" * rate ELSE 0 END)::integer as expense
+    FROM base_stats
+    GROUP BY played_date
+    ORDER BY played_date
+  `;
+
+  const results = await prisma.$queryRaw`${Prisma.raw(query)}`;
+  return (results as DailyStats[]).map((row) => ({
+    date: row.date,
+    total_score_change: Number(row.total_score_change),
+    income: Number(row.income),
+    expense: Number(row.expense),
+  }));
 };
 
 export const getGameStats = async (
@@ -55,156 +162,38 @@ export const getGameStats = async (
     return { status: "error", message: "認証されていません" };
   }
 
-  // check yearMonth is valid
   if (yearMonth && !/^\d{4}-\d{2}$/.test(yearMonth)) {
     return { status: "error", message: "無効な年月が指定されました" };
   }
 
   try {
-    const [year, month] = yearMonth ? yearMonth.split("-").map(Number) : [];
-    const games = await prisma.game.findMany({
-      where: {
-        createdBy: Number(session.user.id),
-        ...(yearMonth && {
-          playedAt: {
-            gte: new Date(year, month - 1, 1),
-            lt: new Date(year, month, 1),
-          },
-        }),
-      },
-      include: {
-        chipResults: true,
-        rounds: {
-          include: {
-            roundResults: true,
-          },
-        },
-      },
-    });
-
-    const dailyStats = await getDailyStats(
+    const rankStats = await getRankStats(
       Number(session.user.id),
-      yearMonth ? yearMonth : "",
+      yearMonth,
       NumberOfPlayers.FOUR,
     );
-    console.log(JSON.stringify(games, null, 2));
-    console.log(JSON.stringify(dailyStats));
-    // Classify games into 3-player and 4-player
-    const threePlayerGames = games.filter((g) => g.numberOfPlayers === "THREE");
-    const fourPlayerGames = games.filter((g) => g.numberOfPlayers === "FOUR");
+    const dailyStats = await getDailyStats(
+      Number(session.user.id),
+      yearMonth,
+      NumberOfPlayers.FOUR,
+    );
+    const financialStats = await getFinancialStats(
+      Number(session.user.id),
+      yearMonth,
+      NumberOfPlayers.FOUR,
+    );
 
-    // Helper function to calculate stats
-    const calculateStats = (games: typeof threePlayerGames) => {
-      const rankCounts = { "1": 0, "2": 0, "3": 0, "4": 0 };
-      let totalChips = 0;
-      let totalScore = 0;
-      let totalIncome = 0;
-      let totalExpense = 0;
-      let totalGameFee = 0;
-
-      // Map for daily stats
-      const dailyStatsMap = new Map<
-        string,
-        { income: number; expense: number }
-      >();
-
-      games.forEach((game) => {
-        // Rank stats
-        game.rounds.forEach((round) => {
-          round.roundResults.forEach((result) => {
-            if (result.userId === Number(session.user.id)) {
-              rankCounts[result.rank.toString() as keyof typeof rankCounts]++;
-              totalScore += result.scoreChange;
-            }
-          });
-        });
-
-        // Chip stats
-        game.chipResults.forEach((result) => {
-          if (result.userId === Number(session.user.id)) {
-            totalChips += result.chipChange;
-            if (result.chipChange > 0) {
-              totalIncome += result.chipChange * game.chipRate;
-            } else {
-              totalExpense += Math.abs(result.chipChange) * game.chipRate;
-            }
-          }
-        });
-
-        // Daily stats
-        const dateKey = game.playedAt.toISOString().split("T")[0];
-        const dailyStats = dailyStatsMap.get(dateKey) || {
-          income: 0,
-          expense: 0,
-        };
-        game.chipResults.forEach((result) => {
-          if (result.userId === Number(session.user.id)) {
-            if (result.chipChange > 0) {
-              dailyStats.income += result.chipChange * game.chipRate;
-            } else {
-              dailyStats.expense += Math.abs(result.chipChange) * game.chipRate;
-            }
-          }
-        });
-        dailyStatsMap.set(dateKey, dailyStats);
-
-        totalGameFee += game.fee;
-      });
-
-      const totalGames = games.length;
-      return {
-        rankStats: {
-          "1": {
-            count: rankCounts["1"],
-            percentage: (rankCounts["1"] / totalGames) * 100,
-          },
-          "2": {
-            count: rankCounts["2"],
-            percentage: (rankCounts["2"] / totalGames) * 100,
-          },
-          "3": {
-            count: rankCounts["3"],
-            percentage: (rankCounts["3"] / totalGames) * 100,
-          },
-          "4": {
-            count: rankCounts["4"],
-            percentage: (rankCounts["4"] / totalGames) * 100,
-          },
-        },
-        performanceStats: {
-          winRate: (rankCounts["1"] / totalGames) * 100,
-          averageRank:
-            Object.entries(rankCounts).reduce(
-              (acc, [rank, count]) => acc + Number(rank) * count,
-              0,
-            ) / totalGames,
-          totalChips,
-          totalScore,
-        },
-        financialStats: {
-          totalIncome,
-          totalExpense,
-          totalProfit: totalIncome - totalExpense,
-          gameFee: totalGameFee,
-          totalProfitIncludingGameFee:
-            totalIncome - totalExpense - totalGameFee,
-        },
-        dailyStats: Array.from(dailyStatsMap.entries()).map(
-          ([date, stats]) => ({
-            date: new Date(date),
-            income: stats.income,
-            expense: stats.expense,
-          }),
-        ),
-      };
-    };
+    console.log("rankStats:", rankStats);
+    console.log("dailyStats:", dailyStats);
+    console.log("financialStats:", financialStats);
 
     return {
       status: "success",
-      data: {
-        threePlayerGameStats: calculateStats(threePlayerGames),
-        fourPlayerGameStats: calculateStats(fourPlayerGames),
-      },
+      // data: {
+      //   rankStats,
+      //   dailyStats,
+      //   financialStats,
+      // },
       message: "統計情報の取得に成功しました",
     };
   } catch (error) {
