@@ -15,6 +15,7 @@ export default {
         pineGlade: "#B8C68C",
         amazon: "#2D6B47",
         denim: "#1876D2",
+        oldGold: "#D4AF37"
       },
       fontFamily: {
         sans: ["var(--font-montserrat)", "var(--font-notoSansJp)"],
