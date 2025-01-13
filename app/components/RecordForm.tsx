@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 // type Props = {}
 
@@ -64,7 +64,7 @@ const mockData = {
 console.log(mockData);
 
 const RecordForm = () => {
-  const [scoreColor, setScoreColor] = useState<{[key: string]: string}>({})
+  const [scoreColor, setScoreColor] = useState<{ [key: string]: string }>({});
 
   const [formData, setFormData] = useState<FormData>({
     playedAt: new Date().toISOString().split("T")[0],
@@ -78,40 +78,24 @@ const RecordForm = () => {
         scores: [
           { userId: 1, scoreChange: 0, chips: 0 },
           { userId: 2, scoreChange: 0, chips: 0 },
-          { userId: 0, scoreChange: 0, chips: 0 },
-          { userId: 0, scoreChange: 0, chips: 0 },
+          { userId: 3, scoreChange: 0, chips: 0 },
+          { userId: 4, scoreChange: 0, chips: 0 },
         ],
       },
     ],
   });
 
-  const updateFormValue = (
-    field: keyof Omit<FormData, "rounds">,
-    value: string | number,
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const updateFormValue = useCallback(
+    (field: keyof Omit<FormData, "rounds">, value: string | number) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
-  const saveRoundScore = (
-    roundIndex: number,
-    userId: number,
-    field: keyof PlayerScore,
-    value: number,
-  ) => {
-    setFormData((prev) => {
-      const updatedRounds = prev.rounds.map((round, index) => {
-        if (index === roundIndex) {
-          return {
-            ...round,
-            scores: round.scores.map((score) =>
-              score.userId === userId ? { ...score, [field]: value } : score,
-            ),
-          };
-        }
-        return round;
-      });
-      return { ...prev, rounds: updatedRounds };
-    });
+  const calculateScoreColor = (score: number): string => {
+    if (score > 0) return "text-appleBlossom";
+    if (score < 0) return "text-denim";
+    return "text-black";
   };
 
   const addRound = () => {
@@ -146,18 +130,69 @@ const RecordForm = () => {
     }));
   };
 
-  const handleScoreChange = (
-    roundId: number,
-    userId: number,
-    value: number,
-  ) => {
-    saveRoundScore(roundId, userId, "scoreChange", value);
+  const handleScoreChange = useCallback(
+    (roundId: number, userId: number, value: number) => {
+      setFormData((prev) => {
+        const updatedRound: RoundData[] = prev.rounds.map((round) => {
+          if (round.id !== roundId) return round;
 
-    setScoreColor(prev => ({
-      ...prev,
-      [`${roundId}-${userId}`]: value > 0 ? "text-appleBlossom" : value < 0 ? "text-denim" : "text-black"
-    }))
-  };
+          const updatedScores = round.scores.map((score) => {
+            if (score.userId === userId) {
+              return { ...score, scoreChange: value };
+            }
+            return score;
+          });
+
+          const filledScores = updatedScores.filter(
+            (score) =>
+              score.scoreChange !== null &&
+              score.scoreChange !== undefined &&
+              score.scoreChange !== 0,
+          );
+
+          if (filledScores.length === updatedScores.length - 1) {
+            const filledSum = updatedScores.reduce(
+              (sum, score) => sum + (score.scoreChange || 0),
+              0,
+            );
+
+            const updatedWithRemainingScore = updatedScores.map((score) => {
+              if (
+                score.scoreChange === null ||
+                score.scoreChange === undefined ||
+                score.scoreChange === 0
+              ) {
+                return { ...score, scoreChange: -filledSum };
+              }
+              return score;
+            });
+
+            const updatedScoreColors = updatedWithRemainingScore.reduce(
+              (colors, score) => ({
+                ...colors,
+                [`${round.id}-${score.userId}`]: calculateScoreColor(
+                  score.scoreChange || 0,
+                ),
+              }),
+              {},
+            );
+
+            setScoreColor((prev) => ({ ...prev, ...updatedScoreColors }));
+            
+            return { ...round, scores: updatedWithRemainingScore };
+          }
+          return { ...round, scores: updatedScores };
+        });
+        return { ...prev, rounds: updatedRound };
+      });
+
+      setScoreColor((prev) => ({
+        ...prev,
+        [`${roundId}-${userId}`]: calculateScoreColor(value),
+      }));
+    },
+    [],
+  );
 
   return (
     <form className="flex flex-col items-center gap-6">
@@ -174,6 +209,7 @@ const RecordForm = () => {
             レート(P/千点)
           </label>
           <input
+            id="rate"
             type="number"
             name="rate"
             className="w-full text-center focus:outline-none"
@@ -185,6 +221,7 @@ const RecordForm = () => {
             ゲーム代(P/千点)
           </label>
           <input
+            id="fee"
             type="number"
             name="fee"
             className="w-full text-center focus:outline-none"
@@ -196,6 +233,7 @@ const RecordForm = () => {
             チップ(P/千点)
           </label>
           <input
+            id="chipRate"
             type="number"
             name="chipRate"
             className="w-full text-center focus:outline-none"
@@ -288,6 +326,7 @@ const RecordForm = () => {
                   <input
                     type="number"
                     className={`h-14 w-14 border-transparent p-1 text-center focus:outline-none ${scoreColor[`${round.id}-${score.userId}`] || "text-black"}`}
+                    value={score.scoreChange || ""}
                     onChange={(e) =>
                       handleScoreChange(
                         round.id,
