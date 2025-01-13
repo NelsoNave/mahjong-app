@@ -6,17 +6,17 @@ import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
 const montserrat = Montserrat({
-  subsets: ['latin'],
-  display: 'swap',
+  subsets: ["latin"],
+  display: "swap",
   weight: ["300", "500", "700"],
-  variable: '--font-montserrat',
-})
+  variable: "--font-montserrat",
+});
 
 const notoSansJp = Noto_Sans_JP({
-  subsets: ['latin-ext'],
-  display: 'swap',
-  variable: '--font-notoSansJp',
-})
+  subsets: ["latin-ext"],
+  display: "swap",
+  variable: "--font-notoSansJp",
+});
 
 export const metadata: Metadata = {
   title: "Mahjong-app",
