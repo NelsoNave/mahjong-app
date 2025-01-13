@@ -8,6 +8,6 @@ export default async function Page() {
   if (!session) {
     redirect("/login");
   } else {
-    redirect("/result");
+    redirect("/stats");
   }
 }
