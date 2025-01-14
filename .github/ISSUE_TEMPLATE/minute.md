@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-# 202x/xx/xx xx:00~
+# 2025/01/xx xx:00~
 
 **Attendees**: Ben, Haruka, Risa
 
