@@ -19,11 +19,11 @@ interface RankStats {
 }
 
 interface FinancialStats {
-  total_income: number;
-  total_expense: number;
-  total_profit: number;
-  total_game_fee: number;
-  total_profit_with_fee: number;
+  totalIncome: number;
+  totalExpense: number;
+  totalProfit: number;
+  gameFee: number;
+  totalProfitIncludingGameFee: number;
 }
 
 const basicStatsQuery = (
@@ -109,23 +109,24 @@ export const getFinancialStats = async (
         CASE WHEN "scoreChange" * rate > 0 
         THEN "scoreChange" * rate 
         ELSE 0 END
-      )::integer, 0) as total_income,
+      )::integer, 0) AS "totalIncome",
       COALESCE(ABS(SUM(
         CASE WHEN "scoreChange" * rate < 0 
         THEN "scoreChange" * rate 
         ELSE 0 END
-      ))::integer, 0) as total_expense,
-      COALESCE(SUM("scoreChange" * rate)::integer, 0) as total_profit,
-      COALESCE(SUM(CASE WHEN row_num = 1 THEN fee ELSE 0 END)::integer, 0) as total_game_fee,
+      ))::integer, 0) AS "totalExpense",
+      COALESCE(SUM("scoreChange" * rate)::integer, 0) AS "totalProfit",
+      COALESCE(SUM(CASE WHEN row_num = 1 THEN fee ELSE 0 END)::integer, 0) AS "totalGameFee",
       COALESCE((
         SUM("scoreChange" * rate) - 
         SUM(CASE WHEN row_num = 1 THEN fee ELSE 0 END)
-      )::integer, 0) as total_profit_with_fee
+      )::integer, 0) AS "totalProfitIncludingGameFee"
     FROM base_stats
   `;
 
   const results = await prisma.$queryRaw`${Prisma.raw(query)}`;
-  return results as FinancialStats;
+  const stats = results as FinancialStats[];
+  return stats[0];
 };
 
 export const getDailyStats = async (
@@ -189,11 +190,13 @@ export const getGameStats = async (
 
     return {
       status: "success",
-      // data: {
-      //   rankStats,
-      //   dailyStats,
-      //   financialStats,
-      // },
+      data: {
+        fourPlayerGameStats: {
+          //rankStats,
+          //dailyStats,
+          financialStats: financialStats,
+        },
+      },
       message: "統計情報の取得に成功しました",
     };
   } catch (error) {
