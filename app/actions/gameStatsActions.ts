@@ -29,7 +29,6 @@ interface FinancialStats {
 const basicStatsQuery = (
   userId: number,
   yearMonth: string | undefined,
-  numberOfPlayers: NumberOfPlayers,
 ): string => {
   let dateCondition = "";
 
@@ -48,6 +47,7 @@ const basicStatsQuery = (
       SELECT
         g.id as game_id,
         DATE(g."playedAt") as played_date,
+        g."numberOfPlayers",
         rr."rank",
         rr."scoreChange",
         g.rate,
@@ -59,7 +59,6 @@ const basicStatsQuery = (
       WHERE 
         rr."userId" = ${userId}
         ${dateCondition}
-        AND g."numberOfPlayers"::text = '${numberOfPlayers}'::text
     )
   `;
 };
@@ -67,44 +66,64 @@ const basicStatsQuery = (
 export const getRankStats = async (
   userId: number,
   yearMonth: string | undefined,
-  numberOfPlayers: NumberOfPlayers,
-): Promise<RankStats[]> => {
+): Promise<Record<NumberOfPlayers, RankStats[]>> => {
   const query = `
-    ${basicStatsQuery(userId, yearMonth, numberOfPlayers)}
+    ${basicStatsQuery(userId, yearMonth)}
     , ranks AS (
       SELECT generate_series(1, 4) as rank
     )
     , rank_counts AS (
       SELECT
+        bs."numberOfPlayers",
         r.rank,
         COUNT(bs.rank)::integer as count
       FROM ranks r
-      LEFT JOIN base_stats bs ON bs.rank = r.rank
-      GROUP BY r.rank
+      CROSS JOIN (SELECT DISTINCT "numberOfPlayers" FROM base_stats) np
+      LEFT JOIN base_stats bs ON bs.rank = r.rank AND bs."numberOfPlayers" = np."numberOfPlayers"
+      GROUP BY bs."numberOfPlayers", r.rank
     )
     SELECT 
+      "numberOfPlayers",
       rank,
       count,
       ROUND(
-        count * 100.0 / NULLIF((SELECT SUM(count) FROM rank_counts), 0),
+        count * 100.0 / NULLIF((
+          SELECT SUM(count) 
+          FROM rank_counts rc2 
+          WHERE rc2."numberOfPlayers" = rc1."numberOfPlayers"
+        ), 0),
         2
       ) as percentage
-    FROM rank_counts
-    ORDER BY rank
+    FROM rank_counts rc1
+    ORDER BY "numberOfPlayers", rank
   `;
 
-  const results = await prisma.$queryRaw`${Prisma.raw(query)}`;
-  return results as RankStats[];
+  const results = await prisma.$queryRaw<
+    (RankStats & { numberOfPlayers: NumberOfPlayers })[]
+  >`${Prisma.raw(query)}`;
+
+  // Group results by numberOfPlayers
+  return results.reduce(
+    (acc, stat) => {
+      const { numberOfPlayers, ...rankStat } = stat;
+      if (!acc[numberOfPlayers]) {
+        acc[numberOfPlayers] = [];
+      }
+      acc[numberOfPlayers].push(rankStat);
+      return acc;
+    },
+    {} as Record<NumberOfPlayers, RankStats[]>,
+  );
 };
 
 export const getFinancialStats = async (
   userId: number,
   yearMonth: string | undefined,
-  numberOfPlayers: NumberOfPlayers,
-): Promise<FinancialStats> => {
+): Promise<Record<NumberOfPlayers, FinancialStats>> => {
   const query = `
-    ${basicStatsQuery(userId, yearMonth, numberOfPlayers)}
+    ${basicStatsQuery(userId, yearMonth)}
     SELECT
+      "numberOfPlayers",
       COALESCE(SUM(
         CASE WHEN "scoreChange" * rate > 0 
         THEN "scoreChange" * rate 
@@ -122,20 +141,30 @@ export const getFinancialStats = async (
         SUM(CASE WHEN row_num = 1 THEN fee ELSE 0 END)
       )::integer, 0) AS "totalProfitIncludingGameFee"
     FROM base_stats
+    GROUP BY "numberOfPlayers"
   `;
 
-  const results = await prisma.$queryRaw`${Prisma.raw(query)}`;
-  const stats = results as FinancialStats[];
-  return stats[0];
+  const results = await prisma.$queryRaw<
+    (FinancialStats & { numberOfPlayers: NumberOfPlayers })[]
+  >`${Prisma.raw(query)}`;
+
+  // Convert array to record with numberOfPlayers as keys
+  return results.reduce(
+    (acc, stat) => {
+      const { numberOfPlayers, ...stats } = stat;
+      acc[numberOfPlayers] = stats;
+      return acc;
+    },
+    {} as Record<NumberOfPlayers, FinancialStats>,
+  );
 };
 
 export const getDailyStats = async (
   userId: number,
   yearMonth: string | undefined,
-  numberOfPlayers: NumberOfPlayers,
 ): Promise<DailyStats[]> => {
   const query = `
-    ${basicStatsQuery(userId, yearMonth, numberOfPlayers)}
+    ${basicStatsQuery(userId, yearMonth)}
     SELECT
       played_date as date,
       SUM("scoreChange" * rate)::integer as total_score_change,
@@ -168,20 +197,11 @@ export const getGameStats = async (
   }
 
   try {
-    const rankStats = await getRankStats(
-      Number(session.user.id),
-      yearMonth,
-      NumberOfPlayers.FOUR,
-    );
-    const dailyStats = await getDailyStats(
-      Number(session.user.id),
-      yearMonth,
-      NumberOfPlayers.FOUR,
-    );
+    const rankStats = await getRankStats(Number(session.user.id), yearMonth);
+    const dailyStats = await getDailyStats(Number(session.user.id), yearMonth);
     const financialStats = await getFinancialStats(
       Number(session.user.id),
       yearMonth,
-      NumberOfPlayers.FOUR,
     );
 
     console.log("rankStats:", rankStats);
@@ -194,7 +214,7 @@ export const getGameStats = async (
         fourPlayerGameStats: {
           //rankStats,
           //dailyStats,
-          financialStats: financialStats,
+          financialStats: financialStats.FOUR,
         },
       },
       message: "統計情報の取得に成功しました",
