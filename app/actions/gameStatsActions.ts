@@ -207,3 +207,35 @@ export const getGameStats = async (
     };
   }
 };
+
+/**
+ * Gets available months that have game records for the authenticated user
+ * @returns {Promise<string[]>} Array of months in YYYY-MM format, sorted chronologically
+ * @example
+ * // Returns months like:
+ * ["2024-01", "2024-02", "2024-03"]
+ */
+export const getAvailableMonths = async (): Promise<string[]> => {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return [];
+  }
+
+  const query = `
+    SELECT DISTINCT
+      TO_CHAR(g."playedAt", 'YYYY-MM') as month
+    FROM games g
+    WHERE g."createdBy" = ${Number(session.user.id)}
+    ORDER BY month
+  `;
+
+  try {
+    const results = await prisma.$queryRaw<
+      { month: string }[]
+    >`${Prisma.raw(query)}`;
+    return results.map((r) => r.month);
+  } catch (error) {
+    console.error("Failed to fetch available months:", error);
+    return [];
+  }
+};
