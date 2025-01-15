@@ -3,10 +3,9 @@
 import Image from "next/image";
 import { useCallback, useState } from "react";
 
-// type Props = {}
-
 type PlayerScore = {
   userId: number;
+  userName: string;
   scoreChange: number;
   chips: number;
 };
@@ -14,7 +13,7 @@ type PlayerScore = {
 type RoundData = {
   id: number;
   roundNumber: number;
-  scores: PlayerScore[];
+  results: PlayerScore[];
 };
 
 type FormData = {
@@ -75,11 +74,11 @@ const RecordForm = () => {
       {
         id: Date.now(),
         roundNumber: 1,
-        scores: [
-          { userId: 1, scoreChange: 0, chips: 0 },
-          { userId: 2, scoreChange: 0, chips: 0 },
-          { userId: 3, scoreChange: 0, chips: 0 },
-          { userId: 4, scoreChange: 0, chips: 0 },
+        results: [
+          { userId: 1, userName: "", scoreChange: 0, chips: 0 },
+          { userId: 2, userName: "", scoreChange: 0, chips: 0 },
+          { userId: 3, userName: "", scoreChange: 0, chips: 0 },
+          { userId: 4, userName: "", scoreChange: 0, chips: 0 },
         ],
       },
     ],
@@ -112,8 +111,9 @@ const RecordForm = () => {
           {
             id: Date.now(),
             roundNumber: lastRoundNumber + 1,
-            scores: prev.rounds[0].scores.map(({ userId }) => ({
+            results: prev.rounds[0].results.map(({ userId }) => ({
               userId,
+              userName: "",
               scoreChange: 0,
               chips: 0,
             })),
@@ -130,69 +130,73 @@ const RecordForm = () => {
     }));
   };
 
-  const handleScoreChange = useCallback(
-    (roundId: number, userId: number, value: number) => {
-      setFormData((prev) => {
-        const updatedRound: RoundData[] = prev.rounds.map((round) => {
-          if (round.id !== roundId) return round;
+  const handleScoreChange = (
+    roundId: number,
+    userId: number,
+    value: number,
+  ) => {
+    setFormData((prev) => {
+      const updatedRound: RoundData[] = prev.rounds.map((round) => {
+        if (round.id !== roundId) return round;
 
-          const updatedScores = round.scores.map((score) => {
-            if (score.userId === userId) {
-              return { ...score, scoreChange: value };
-            }
-            return score;
-          });
+        const updatedScores = round.results.map((result) => {
+          if (result.userId === userId) {
+            return {
+              ...result,
+              scoreChange: value,
+            };
+          }
+          return result;
+        });
 
-          const filledScores = updatedScores.filter(
-            (score) =>
-              score.scoreChange !== null &&
-              score.scoreChange !== undefined &&
-              score.scoreChange !== 0,
+        const filledScores = updatedScores.filter(
+          (result) =>
+            result.scoreChange !== null &&
+            result.scoreChange !== undefined &&
+            result.scoreChange !== 0,
+        );
+
+        if (filledScores.length === updatedScores.length - 1) {
+          const filledSum = updatedScores.reduce(
+            (sum, result) => sum + (result.scoreChange || 0),
+            0,
           );
 
-          if (filledScores.length === updatedScores.length - 1) {
-            const filledSum = updatedScores.reduce(
-              (sum, score) => sum + (score.scoreChange || 0),
-              0,
-            );
+          const updatedWithRemainingScore = updatedScores.map((result) => {
+            if (
+              result.scoreChange === null ||
+              result.scoreChange === undefined ||
+              result.scoreChange === 0
+            ) {
+              return { ...result, scoreChange: -filledSum };
+            }
+            return result;
+          });
 
-            const updatedWithRemainingScore = updatedScores.map((score) => {
-              if (
-                score.scoreChange === null ||
-                score.scoreChange === undefined ||
-                score.scoreChange === 0
-              ) {
-                return { ...score, scoreChange: -filledSum };
-              }
-              return score;
-            });
+          const updatedScoreColors = updatedWithRemainingScore.reduce(
+            (colors, result) => ({
+              ...colors,
+              [`${round.id}-${result.userId}`]: calculateScoreColor(
+                result.scoreChange || 0,
+              ),
+            }),
+            {},
+          );
 
-            const updatedScoreColors = updatedWithRemainingScore.reduce(
-              (colors, score) => ({
-                ...colors,
-                [`${round.id}-${score.userId}`]: calculateScoreColor(
-                  score.scoreChange || 0,
-                ),
-              }),
-              {},
-            );
+          setScoreColor((prev) => ({ ...prev, ...updatedScoreColors }));
 
-            setScoreColor((prev) => ({ ...prev, ...updatedScoreColors }));
-            
-            return { ...round, scores: updatedWithRemainingScore };
-          }
-          return { ...round, scores: updatedScores };
-        });
-        return { ...prev, rounds: updatedRound };
+          return { ...round, results: updatedWithRemainingScore };
+        }
+        return { ...round, results: updatedScores };
       });
+      return { ...prev, rounds: updatedRound };
+    });
 
-      setScoreColor((prev) => ({
-        ...prev,
-        [`${roundId}-${userId}`]: calculateScoreColor(value),
-      }));
-    },
-    [],
-  );
+    setScoreColor((prev) => ({
+      ...prev,
+      [`${roundId}-${userId}`]: calculateScoreColor(value),
+    }));
+  };
 
   return (
     <form className="flex flex-col items-center gap-6">
@@ -318,20 +322,20 @@ const RecordForm = () => {
               <td className="h-14 w-14 border border-slate-400 bg-pineGlade bg-opacity-20 text-center">
                 {index + 1}
               </td>
-              {round.scores.map((score, scoreIndex) => (
+              {round.results.map((result, resultIndex) => (
                 <td
-                  key={scoreIndex}
+                  key={resultIndex}
                   className="border border-slate-400 text-center"
                 >
                   <input
                     type="number"
-                    className={`h-14 w-14 border-transparent p-1 text-center focus:outline-none ${scoreColor[`${round.id}-${score.userId}`] || "text-black"}`}
-                    value={score.scoreChange || ""}
+                    className={`h-14 w-14 border-transparent p-1 text-center focus:outline-none ${scoreColor[`${round.id}-${result.userId}`] || "text-black"}`}
+                    value={result.scoreChange || ""}
                     onChange={(e) =>
                       handleScoreChange(
                         round.id,
-                        score.userId,
-                        Number(e.target.value),
+                        result.userId,
+                        Number(e.target.value) || 0,
                       )
                     }
                   />
@@ -387,10 +391,30 @@ const RecordForm = () => {
                 className="h-14 w-14 border-transparent p-1 text-center focus:outline-none"
               />
             </td>
-            <td className="border border-slate-400"></td>
-            <td className="border border-slate-400"></td>
-            <td className="border border-slate-400"></td>
-            <td className="border border-slate-400"></td>
+            <td className="border border-slate-400">
+              <input
+                type="number"
+                className="h-14 w-14 border-transparent p-1 text-center focus:outline-none"
+              />
+            </td>
+            <td className="border border-slate-400">
+              <input
+                type="number"
+                className="h-14 w-14 border-transparent p-1 text-center focus:outline-none"
+              />
+            </td>
+            <td className="border border-slate-400">
+              <input
+                type="number"
+                className="h-14 w-14 border-transparent p-1 text-center focus:outline-none"
+              />
+            </td>
+            <td className="border border-slate-400">
+              <input
+                type="number"
+                className="h-14 w-14 border-transparent p-1 text-center focus:outline-none"
+              />
+            </td>
           </tr>
 
           <tr>
