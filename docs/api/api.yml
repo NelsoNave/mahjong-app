@@ -44,6 +44,50 @@ components:
         requestId:
           type: string
           description: "デバッグ用のリクエスト識別子"
+    GameList:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        gameType:
+          type: string
+          example: SET
+        numberOfPlayers:
+          type: string
+          example: 'FOUR'
+        playedAt:
+          type: string
+          format: date
+          example: "2025-01-11"
+        rankCounts:
+          type: object
+          properties:
+            "1":
+              type: integer
+              example: 4
+            "2":
+              type: integer
+              example: 2
+            "3":
+              type: integer
+              example: 1
+            "4":
+              type: integer
+              example: 3
+        averageRank:
+          type: integer
+          format: float
+          example: 2.45
+        totalChips:
+          type: integer
+          example: -21
+        totalPoints:
+          type: integer
+          example: 104
+        createdUserName:
+          type: string
+          example: "りさ"
     Game:
       type: object
       properties:
@@ -481,7 +525,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Game"
+                  $ref: "#/components/schemas/GameList"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "500":
