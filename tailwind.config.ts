@@ -13,9 +13,13 @@ export default {
         foreground: "var(--foreground)",
         appleBlossom: "#A54242",
         pineGlade: "#B8C68C",
+        lightPineGlade: "rgba(184, 198, 140, 0.3)",
         amazon: "#2D6B47",
         denim: "#1876D2",
         oldGold: "#D4AF37"
+        zombie: "#E7D598",
+        lightBlue: "#A7C7E7",
+        matrix: "#B56562",
       },
       fontFamily: {
         sans: ["var(--font-montserrat)", "var(--font-notoSansJp)"],
@@ -25,6 +29,9 @@ export default {
       },
       boxShadow: {
         bottom: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+      },
+      screens: {
+        "max-sm": { max: "424px" },
       },
     },
   },
