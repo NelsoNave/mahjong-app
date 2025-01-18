@@ -16,6 +16,7 @@ export default {
         lightPineGlade: "rgba(184, 198, 140, 0.3)",
         amazon: "#2D6B47",
         denim: "#1876D2",
+        oldGold: "#D4AF37",
         zombie: "#E7D598",
         lightBlue: "#A7C7E7",
         matrix: "#B56562",
