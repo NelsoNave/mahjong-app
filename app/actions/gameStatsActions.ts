@@ -3,35 +3,15 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { GameStats } from "@/types/game";
+import {
+  GameStats,
+  DailyStats,
+  RankStats,
+  FinancialStats,
+  RankStatsMap,
+  PerformanceStats,
+} from "@/types/game";
 import { NumberOfPlayers } from "@prisma/client";
-interface DailyStats {
-  date: Date;
-  total_score_change: number;
-  income: number;
-  expense: number;
-}
-
-interface RankStats {
-  rank: 1 | 2 | 3 | 4;
-  count: number;
-  percentage: number;
-}
-
-interface FinancialStats {
-  totalIncome: number;
-  totalExpense: number;
-  totalProfit: number;
-  gameFee: number;
-  totalProfitIncludingGameFee: number;
-}
-
-type RankStatsMap = {
-  "1": { count: number; percentage: number };
-  "2": { count: number; percentage: number };
-  "3": { count: number; percentage: number };
-  "4": { count: number; percentage: number };
-};
 
 const basicStatsQuery = (
   userId: number,
@@ -211,6 +191,57 @@ export const getDailyStats = async (
   }));
 };
 
+export const getPerformanceStats = async (
+  userId: number,
+  yearMonth: string | undefined,
+): Promise<Record<NumberOfPlayers, PerformanceStats>> => {
+  const query = `
+    ${basicStatsQuery(userId, yearMonth)}
+    SELECT
+      bs."numberOfPlayers",
+      ROUND(
+        COUNT(CASE WHEN bs.rank IN (1, 2) THEN 1 END) * 100.0 / 
+        NULLIF(COUNT(*), 0), 
+        2
+      ) as "winRate",
+      ROUND(AVG(bs.rank)::numeric, 2) as "averageRank",
+      COALESCE(
+        SUM(CASE 
+          WHEN cr."userId" = ${userId} 
+          THEN cr."chipChange" 
+          ELSE 0 
+        END)::integer,
+        0
+      ) as "totalChips",
+      COALESCE(
+        SUM(bs."scoreChange" * bs.rate)::integer,
+        0
+      ) as "totalScore"
+    FROM base_stats bs
+    LEFT JOIN games g ON g.id = bs.game_id
+    LEFT JOIN chip_results cr ON g.id = cr."gameId"
+    GROUP BY bs."numberOfPlayers"
+  `;
+
+  const results = await prisma.$queryRaw<
+    (PerformanceStats & { numberOfPlayers: NumberOfPlayers })[]
+  >`${Prisma.raw(query)}`;
+
+  return results.reduce(
+    (acc, stat) => {
+      const { numberOfPlayers, ...stats } = stat;
+      acc[numberOfPlayers] = {
+        winRate: Number(stats.winRate ?? 0),
+        averageRank: Number(stats.averageRank ?? 0),
+        totalChips: Number(stats.totalChips ?? 0),
+        totalScore: Number(stats.totalScore ?? 0),
+      };
+      return acc;
+    },
+    {} as Record<NumberOfPlayers, PerformanceStats>,
+  );
+};
+
 export const getGameStats = async (
   yearMonth?: string,
 ): Promise<ActionState<GameStats>> => {
@@ -225,6 +256,10 @@ export const getGameStats = async (
 
   try {
     const rankStats = await getRankStats(Number(session.user.id), yearMonth);
+    const performanceStats = await getPerformanceStats(
+      Number(session.user.id),
+      yearMonth,
+    );
     const dailyStats = await getDailyStats(Number(session.user.id), yearMonth);
     const financialStats = await getFinancialStats(
       Number(session.user.id),
@@ -245,8 +280,6 @@ export const getGameStats = async (
         return acc;
       }, initial);
     };
-    console.log(formatRankStats(rankStats.FOUR));
-    console.log("ssss");
 
     return {
       status: "success",
@@ -255,12 +288,14 @@ export const getGameStats = async (
           rankStats: formatRankStats(rankStats.FOUR),
           financialStats: financialStats.FOUR,
           dailyStats: dailyStats,
+          performanceStats: performanceStats.FOUR,
         },
-        // threePlayerGameStats: {
-        //   //rankStats: formatRankStats(rankStats.THREE),
-        //   financialStats: financialStats.THREE,
-        //   dailyStats: dailyStats,
-        // },
+        threePlayerGameStats: {
+          rankStats: formatRankStats(rankStats.THREE),
+          financialStats: financialStats.THREE,
+          dailyStats: dailyStats,
+          performanceStats: performanceStats.THREE,
+        },
       },
       message: "統計情報の取得に成功しました",
     };

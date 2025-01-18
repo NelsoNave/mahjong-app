@@ -1,6 +1,5 @@
 import { GameType, NumberOfPlayers } from "@prisma/client";
 
-
 export type GameInfo = {
   id: number;
   gameType: GameType;
@@ -31,84 +30,118 @@ export type GameInfo = {
   }[];
 };
 
-
 export type GameStats = {
   threePlayerGameStats: {
     // 1-4着, 回数, 割合
     rankStats: {
-     "1": {
+      "1": {
         count: number;
         percentage: number;
-     } ,
-     "2": {
+      };
+      "2": {
         count: number;
         percentage: number;
-     } ,
-     "3": {
+      };
+      "3": {
         count: number;
         percentage: number;
-     }
-     "4": {
+      };
+      "4": {
         count: number;
         percentage: number;
-     }
+      };
     };
     performanceStats: {
-        winRate: number;
-        averageRank: number;
-        totalChips: number;
-        totalScore: number;
+      winRate: number;
+      averageRank: number;
+      totalChips: number;
+      totalScore: number;
     };
     financialStats: {
-        totalIncome: number;
-        totalExpense: number;
-        totalProfit: number;
-        gameFee: number;
-        totalProfitIncludingGameFee: number;
+      totalIncome: number;
+      totalExpense: number;
+      totalProfit: number;
+      gameFee: number;
+      totalProfitIncludingGameFee: number;
     };
     dailyStats: {
-        date: Date;
-        income: number;
-        expense: number;
+      date: Date;
+      income: number;
+      expense: number;
     }[];
   };
   fourPlayerGameStats: {
     // 1-4着, 回数, 割合
     rankStats: {
-     "1": {
+      "1": {
         count: number;
         percentage: number;
-     } ,
-     "2": {
+      };
+      "2": {
         count: number;
         percentage: number;
-     } ,
-     "3": {
+      };
+      "3": {
         count: number;
         percentage: number;
-     }
-     "4": {
+      };
+      "4": {
         count: number;
         percentage: number;
-     }
+      };
     };
     performanceStats: {
-        winRate: number;
-        averageRank: number;
-        totalChips: number;
-        totalScore: number;
+      winRate: number;
+      averageRank: number;
+      totalChips: number;
+      totalScore: number;
     };
     financialStats: {
-        totalIncome: number;
-        totalExpense: number;
-        totalProfit: number;
-        gameFee: number;
-        totalProfitIncludingGameFee: number;
+      totalIncome: number;
+      totalExpense: number;
+      totalProfit: number;
+      gameFee: number;
+      totalProfitIncludingGameFee: number;
     };
     dailyStats: {
-        date: Date;
-        income: number;
-        expense: number;
+      date: Date;
+      income: number;
+      expense: number;
     }[];
   };
+};
+
+export type PerformanceStats = {
+  winRate: number;
+  averageRank: number;
+  totalChips: number;
+  totalScore: number;
+};
+
+export type DailyStats = {
+  date: Date;
+  total_score_change: number;
+  income: number;
+  expense: number;
+};
+
+export type RankStats = {
+  rank: 1 | 2 | 3 | 4;
+  count: number;
+  percentage: number;
+};
+
+export type FinancialStats = {
+  totalIncome: number;
+  totalExpense: number;
+  totalProfit: number;
+  gameFee: number;
+  totalProfitIncludingGameFee: number;
+};
+
+export type RankStatsMap = {
+  "1": { count: number; percentage: number };
+  "2": { count: number; percentage: number };
+  "3": { count: number; percentage: number };
+  "4": { count: number; percentage: number };
 };
