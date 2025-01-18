@@ -13,7 +13,7 @@ interface DailyStats {
 }
 
 interface RankStats {
-  rank: number;
+  rank: 1 | 2 | 3 | 4;
   count: number;
   percentage: number;
 }
@@ -25,6 +25,13 @@ interface FinancialStats {
   gameFee: number;
   totalProfitIncludingGameFee: number;
 }
+
+type RankStatsMap = {
+  "1": { count: number; percentage: number };
+  "2": { count: number; percentage: number };
+  "3": { count: number; percentage: number };
+  "4": { count: number; percentage: number };
+};
 
 const basicStatsQuery = (
   userId: number,
@@ -69,47 +76,67 @@ export const getRankStats = async (
 ): Promise<Record<NumberOfPlayers, RankStats[]>> => {
   const query = `
     ${basicStatsQuery(userId, yearMonth)}
-    , ranks AS (
-      SELECT generate_series(1, 4) as rank
+    , player_types AS (
+      SELECT 
+        "numberOfPlayers",
+        CASE 
+          WHEN "numberOfPlayers" = 'THREE' THEN 3
+          WHEN "numberOfPlayers" = 'FOUR' THEN 4
+        END as max_rank
+      FROM (SELECT DISTINCT "numberOfPlayers" FROM base_stats) np
+    )
+    , ranks_by_players AS (
+      SELECT 
+        pt."numberOfPlayers",
+        s.rank
+      FROM player_types pt
+      CROSS JOIN LATERAL (
+        SELECT generate_series(1, pt.max_rank) as rank
+      ) s
     )
     , rank_counts AS (
       SELECT
-        bs."numberOfPlayers",
+        r."numberOfPlayers",
         r.rank,
         COUNT(bs.rank)::integer as count
-      FROM ranks r
-      CROSS JOIN (SELECT DISTINCT "numberOfPlayers" FROM base_stats) np
-      LEFT JOIN base_stats bs ON bs.rank = r.rank AND bs."numberOfPlayers" = np."numberOfPlayers"
-      GROUP BY bs."numberOfPlayers", r.rank
+      FROM ranks_by_players r
+      LEFT JOIN base_stats bs ON 
+        bs."numberOfPlayers" = r."numberOfPlayers"
+        AND bs.rank = r.rank
+      GROUP BY r."numberOfPlayers", r.rank
     )
     SELECT 
-      "numberOfPlayers",
-      rank,
-      count,
-      ROUND(
-        count * 100.0 / NULLIF((
-          SELECT SUM(count) 
-          FROM rank_counts rc2 
-          WHERE rc2."numberOfPlayers" = rc1."numberOfPlayers"
-        ), 0),
-        2
-      ) as percentage
-    FROM rank_counts rc1
-    ORDER BY "numberOfPlayers", rank
+      rc."numberOfPlayers",
+      rc.rank,
+      rc.count,
+      CASE 
+        WHEN total.total_count = 0 THEN 0
+        ELSE ROUND(rc.count * 100.0 / total.total_count, 2)
+      END as percentage
+    FROM rank_counts rc
+    CROSS JOIN LATERAL (
+      SELECT COALESCE(SUM(count), 0) as total_count
+      FROM rank_counts rc2
+      WHERE rc2."numberOfPlayers" = rc."numberOfPlayers"
+    ) total
+    ORDER BY rc."numberOfPlayers", rc.rank
   `;
 
   const results = await prisma.$queryRaw<
     (RankStats & { numberOfPlayers: NumberOfPlayers })[]
   >`${Prisma.raw(query)}`;
 
-  // Group results by numberOfPlayers
+  // Group results and convert Decimal to number
   return results.reduce(
     (acc, stat) => {
       const { numberOfPlayers, ...rankStat } = stat;
       if (!acc[numberOfPlayers]) {
         acc[numberOfPlayers] = [];
       }
-      acc[numberOfPlayers].push(rankStat);
+      acc[numberOfPlayers].push({
+        ...rankStat,
+        percentage: Number(rankStat.percentage ?? 0),
+      });
       return acc;
     },
     {} as Record<NumberOfPlayers, RankStats[]>,
@@ -204,18 +231,36 @@ export const getGameStats = async (
       yearMonth,
     );
 
-    console.log("rankStats:", rankStats);
-    console.log("dailyStats:", dailyStats);
-    console.log("financialStats:", financialStats);
+    // Convert rank stats array to object format
+    const formatRankStats = (stats: RankStats[]): RankStatsMap => {
+      const initial: RankStatsMap = {
+        "1": { count: 0, percentage: 0 },
+        "2": { count: 0, percentage: 0 },
+        "3": { count: 0, percentage: 0 },
+        "4": { count: 0, percentage: 0 },
+      };
+
+      return stats.reduce((acc, { rank, count, percentage }) => {
+        acc[rank] = { count, percentage };
+        return acc;
+      }, initial);
+    };
+    console.log(formatRankStats(rankStats.FOUR));
+    console.log("ssss");
 
     return {
       status: "success",
       data: {
         fourPlayerGameStats: {
-          //rankStats,
-          //dailyStats,
+          rankStats: formatRankStats(rankStats.FOUR),
           financialStats: financialStats.FOUR,
+          dailyStats: dailyStats,
         },
+        // threePlayerGameStats: {
+        //   //rankStats: formatRankStats(rankStats.THREE),
+        //   financialStats: financialStats.THREE,
+        //   dailyStats: dailyStats,
+        // },
       },
       message: "統計情報の取得に成功しました",
     };
