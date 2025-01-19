@@ -2,10 +2,17 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { GameInfo } from "@/types/game";
+import { GameInfo, GameHistory } from "@/types/game";
 
-// Get game info by year
-export const getGameInfo = async (year: string): Promise<ActionState<GameInfo>> => {
+/**
+ * Gets game information for a specific year. call from history page
+ * @param {string} year - The year to get game info for (e.g. "2024")
+ * @returns {Promise<ActionState<GameInfo>>} Game information including rounds, chip results and user details
+ * @throws {Error} If user is not authenticated or year is invalid
+ */
+export const getGameInfo = async (
+  year: string,
+): Promise<ActionState<GameHistory>> => {
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -35,31 +42,32 @@ export const getGameInfo = async (year: string): Promise<ActionState<GameInfo>> 
           },
         },
         chipResults: {
+          where: {
+            userId: Number(session.user.id),
+          },
           select: {
-            userId: true,
-            user: {
-              select: {
-                userName: true,
-              },
-            },
             chipChange: true,
           },
         },
         rounds: {
+          where: {
+            roundResults: {
+              some: {
+                userId: Number(session.user.id),
+              },
+            },
+          },
           select: {
             id: true,
             roundNumber: true,
             roundResults: {
+              where: {
+                userId: Number(session.user.id),
+              },
               select: {
                 userId: true,
-                user: {
-                  select: {
-                    userName: true,
-                  },
-                },
                 scoreChange: true,
                 rank: true,
-                position: true,
               },
             },
           },
@@ -70,35 +78,51 @@ export const getGameInfo = async (year: string): Promise<ActionState<GameInfo>> 
       },
     });
 
-    const formattedGames: GameInfo[] = games.map(game => ({
-      id: game.id,
-      gameType: game.gameType,
-      numberOfPlayers: game.numberOfPlayers,
-      playedAt: game.playedAt,
-      rate: game.rate,
-      chipRate: game.chipRate,
-      fee: game.fee,
-      createdBy: {
-        userId: game.user.id,
-        name: game.user.userName,
-      },
-      chipResults: game.chipResults.map(result => ({
-        userId: result.userId,
-        name: result.user?.userName ?? "Unknown",
-        chipChange: result.chipChange,
-      })),
-      rounds: game.rounds.map(round => ({
-        id: round.id,
-        roundNumber: round.roundNumber,
-        results: round.roundResults.map(result => ({
-          userId: result.userId!,
-          name: result.user?.userName ?? "Unknown",
-          scoreChange: result.scoreChange,
-          rank: result.rank,
-          position: result.position,
-        })),
-      })),
-    }));
+    const formattedGames: GameHistory[] = games.map((game) => {
+      // Calculate rank counts
+      const rankCounts = game.rounds.reduce(
+        (acc, round) => {
+          const rank = round.roundResults[0]?.rank;
+          if (rank) {
+            acc[rank.toString() as keyof typeof acc] += 1;
+          }
+          return acc;
+        },
+        { "1": 0, "2": 0, "3": 0, "4": 0 },
+      );
+
+      // Calculate average rank
+      const totalRanks = game.rounds.reduce(
+        (sum, round) => sum + (round.roundResults[0]?.rank ?? 0),
+        0,
+      );
+      const averageRank =
+        game.rounds.length > 0
+          ? Number((totalRanks / game.rounds.length).toFixed(2))
+          : 0;
+
+      // Calculate total chips and score
+      const totalChips = game.chipResults.reduce(
+        (sum, result) => sum + result.chipChange,
+        0,
+      );
+      const totalScore = game.rounds.reduce(
+        (sum, round) => sum + (round.roundResults[0]?.scoreChange ?? 0),
+        0,
+      );
+
+      return {
+        id: game.id,
+        gameType: game.gameType,
+        numberOfPlayers: game.numberOfPlayers,
+        playedAt: game.playedAt,
+        rankCounts,
+        averageRank,
+        totalChips,
+        totalScore,
+        createUserName: game.user.userName,
+      };
+    });
 
     return {
       status: "success",
@@ -106,17 +130,18 @@ export const getGameInfo = async (year: string): Promise<ActionState<GameInfo>> 
       message: "ゲーム情報の取得に成功しました",
     };
   } catch (error) {
-    console.error('Failed to fetch games:', error);
+    console.error("Failed to fetch games:", error);
     return {
       status: "error",
       message: "ゲーム情報の取得に失敗しました",
     };
   }
-}
-
+};
 
 // Get game info
-export const getGameInfoById = async (id: number): Promise<ActionState<GameInfo>> => {
+export const getGameInfoById = async (
+  id: number,
+): Promise<ActionState<GameInfo>> => {
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -182,15 +207,15 @@ export const getGameInfoById = async (id: number): Promise<ActionState<GameInfo>
         userId: game.user.id,
         name: game.user.userName,
       },
-      chipResults: game.chipResults.map(result => ({
+      chipResults: game.chipResults.map((result) => ({
         userId: result.userId,
         name: result.user?.userName ?? "Unknown",
         chipChange: result.chipChange,
       })),
-      rounds: game.rounds.map(round => ({
+      rounds: game.rounds.map((round) => ({
         id: round.id,
         roundNumber: round.roundNumber,
-        results: round.roundResults.map(result => ({
+        results: round.roundResults.map((result) => ({
           userId: result.userId!,
           name: result.user?.userName ?? "Unknown",
           scoreChange: result.scoreChange,
@@ -205,9 +230,8 @@ export const getGameInfoById = async (id: number): Promise<ActionState<GameInfo>
       data: formattedGames,
       message: "ゲーム情報の取得に成功しました",
     };
-
   } catch (error) {
-    console.error('Failed to fetch games:', error);
+    console.error("Failed to fetch games:", error);
     return {
       status: "error",
       message: "ゲーム情報の取得に失敗しました",
@@ -216,7 +240,9 @@ export const getGameInfoById = async (id: number): Promise<ActionState<GameInfo>
 };
 
 // Create game
-export const createGame = async (gameInfo: Omit<GameInfo, "id" | "createdBy">): Promise<ActionState<GameInfo>> => {
+export const createGame = async (
+  gameInfo: Omit<GameInfo, "id" | "createdBy">,
+): Promise<ActionState<GameInfo>> => {
   const session = await auth();
   if (!session?.user?.email) {
     return { status: "error", message: "認証されていません" };
@@ -239,7 +265,7 @@ export const createGame = async (gameInfo: Omit<GameInfo, "id" | "createdBy">): 
 
       // 2. Create chip results
       await tx.chipResults.createMany({
-        data: gameInfo.chipResults.map(result => ({
+        data: gameInfo.chipResults.map((result) => ({
           gameId: game.id,
           userId: result.userId,
           chipChange: result.chipChange,
@@ -256,7 +282,7 @@ export const createGame = async (gameInfo: Omit<GameInfo, "id" | "createdBy">): 
         });
 
         await tx.roundResults.createMany({
-          data: round.results.map(result => ({
+          data: round.results.map((result) => ({
             roundId: createdRound.id,
             userId: result.userId,
             position: result.position,
@@ -274,9 +300,8 @@ export const createGame = async (gameInfo: Omit<GameInfo, "id" | "createdBy">): 
       data: (await getGameInfoById(result.id)).data,
       message: "ゲームの作成に成功しました",
     };
-
   } catch (error) {
-    console.error('Failed to create game:', error);
+    console.error("Failed to create game:", error);
     return {
       status: "error",
       message: "ゲームの作成に失敗しました",
@@ -284,11 +309,9 @@ export const createGame = async (gameInfo: Omit<GameInfo, "id" | "createdBy">): 
   }
 };
 
-
-
 export const updateGame = async (
   id: number,
-  gameInfo: Partial<Omit<GameInfo, "id" | "createdBy">>
+  gameInfo: Partial<Omit<GameInfo, "id" | "createdBy">>,
 ): Promise<ActionState<GameInfo>> => {
   const session = await auth();
   if (!session?.user?.email) {
@@ -332,7 +355,7 @@ export const updateGame = async (
         });
         // Create new chip results
         await tx.chipResults.createMany({
-          data: gameInfo.chipResults.map(result => ({
+          data: gameInfo.chipResults.map((result) => ({
             gameId: game.id,
             userId: result.userId,
             chipChange: result.chipChange,
@@ -347,13 +370,13 @@ export const updateGame = async (
           where: { gameId: id },
           select: { id: true },
         });
-        
+
         for (const round of existingRounds) {
           await tx.roundResults.deleteMany({
             where: { roundId: round.id },
           });
         }
-        
+
         await tx.rounds.deleteMany({
           where: { gameId: id },
         });
@@ -368,7 +391,7 @@ export const updateGame = async (
           });
 
           await tx.roundResults.createMany({
-            data: round.results.map(result => ({
+            data: round.results.map((result) => ({
               roundId: createdRound.id,
               userId: result.userId,
               position: result.position,
@@ -387,9 +410,8 @@ export const updateGame = async (
       data: (await getGameInfoById(result.id)).data,
       message: "ゲームの更新に成功しました",
     };
-
   } catch (error) {
-    console.error('Failed to update game:', error);
+    console.error("Failed to update game:", error);
     return {
       status: "error",
       message: "ゲームの更新に失敗しました",
