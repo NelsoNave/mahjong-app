@@ -30,6 +30,23 @@ export type GameInfo = {
   }[];
 };
 
+export type GameHistory = {
+  id: number;
+  gameType: GameType;
+  numberOfPlayers: NumberOfPlayers;
+  playedAt: Date;
+  rankCounts: {
+    "1": number;
+    "2": number;
+    "3": number;
+    "4": number;
+  };
+  averageRank: number;
+  totalChips: number;
+  totalScore: number;
+  createUserName: string;
+};
+
 export type GameStats = {
   threePlayerGameStats: {
     // 1-4着, 回数, 割合
